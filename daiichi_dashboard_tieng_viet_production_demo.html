@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dai-ichi Life Việt Nam | Dashboard Phân Tích Cuộc Gọi</title>
+<style>
+:root{
+  --bg:#f3f6fb; --surface:#fff; --soft:#f8faff; --ink:#142137; --muted:#718097;
+  --line:#e5ebf3; --navy:#0d1e3d; --navy2:#15335f; --blue:#2864dc; --cyan:#24a8d8;
+  --green:#1aa16f; --amber:#eda333; --red:#dc4c55; --purple:#7358d8; --brand:#d72c3f;
+  --shadow:0 12px 32px rgba(19,41,76,.08); --radius:18px;
+}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+button,input,select{font:inherit}.app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;overflow:auto;padding:22px 18px;background:linear-gradient(180deg,var(--navy),var(--navy2));color:#fff}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}.logo{width:45px;height:45px;border-radius:14px;background:linear-gradient(135deg,#dc3145,#f39a37 55%,#6a4dde);box-shadow:0 8px 18px rgba(0,0,0,.22);position:relative}
+.logo:after{content:"";position:absolute;inset:10px;border:2px solid rgba(255,255,255,.45);border-radius:50%}
+.brand h2{font-size:18px;line-height:1.15;margin:0}.brand small{font-size:10px;color:#bccbe0}
+.env{display:inline-flex;align-items:center;gap:7px;font-size:10px;color:#cbd7e8;background:rgba(255,255,255,.08);padding:7px 10px;border-radius:999px;margin-bottom:18px}.env i{width:7px;height:7px;background:#63dfa0;border-radius:50%}
+.nav-title{font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:#8598b5;margin:15px 9px 8px}.nav{display:grid;gap:7px}
+.nav button{border:0;background:transparent;color:#d2ddec;padding:12px 13px;border-radius:12px;text-align:left;font-size:12px;font-weight:700;cursor:pointer}
+.nav button:hover,.nav button.active{background:rgba(255,255,255,.12);color:#fff}
+.scope{margin-top:18px;padding:14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:16px}
+.scope h4{font-size:11px;margin:0 0 7px}.scope p{font-size:10px;color:#becce0;line-height:1.55;margin:0}
+main{padding:22px 26px 38px}.header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.header h1{margin:0;font-size:27px;letter-spacing:-.02em}.header p{margin:6px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:11px;font-size:11px;font-weight:800;color:var(--ink);cursor:pointer}
+.btn:hover{box-shadow:0 6px 16px rgba(22,43,76,.08)}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}.btn.soft{background:#eef4ff;color:#315caf;border-color:#dae6ff}
+.overview-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:14px}.strip-card{background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid var(--line);border-radius:16px;padding:13px;box-shadow:var(--shadow)}
+.strip-card .l{font-size:10px;color:var(--muted)}.strip-card .v{font-size:23px;font-weight:850;margin-top:4px}.strip-card .s{font-size:9px;color:var(--muted);margin-top:3px}
+.filters{position:sticky;top:10px;z-index:30;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:22px;padding:15px;box-shadow:var(--shadow);margin-bottom:14px}
+.filters-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}.filters-head strong{font-size:14px}.filters-head span{font-size:10px;color:var(--muted);font-weight:600;margin-left:8px}
+.quick{display:flex;gap:7px;flex-wrap:wrap}.quick button{border:1px solid var(--line);background:var(--soft);padding:7px 10px;border-radius:999px;font-size:10px;font-weight:800;cursor:pointer}
+.quick button.active,.quick button:hover{background:#e9f1ff;color:var(--blue);border-color:#d8e5ff}
+.date-row{display:grid;grid-template-columns:1.3fr 1fr;gap:13px;margin-top:12px}.date-slider{background:#f9fbfe;border:1px solid var(--line);border-radius:15px;padding:11px}
+.date-title{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:var(--muted);margin-bottom:7px}.date-title b{color:var(--ink)}
+.dual{position:relative;height:28px}.dual .track{position:absolute;left:0;right:0;top:12px;height:5px;background:#e1e7ef;border-radius:99px}.dual .fill{position:absolute;top:12px;height:5px;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:99px}
+.dual input[type=range]{position:absolute;left:0;top:4px;width:100%;appearance:none;background:transparent;pointer-events:none;margin:0}.dual input[type=range]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:4px solid var(--blue);box-shadow:0 2px 8px rgba(0,0,0,.15);pointer-events:auto;cursor:grab}
+.date-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px}.control-grid{display:grid;grid-template-columns:1.35fr repeat(6,1fr);gap:9px;margin-top:11px}
+.control label{display:block;font-size:9px;color:var(--muted);margin-bottom:4px}.control input,.control select{width:100%;border:1px solid var(--line);border-radius:11px;padding:9px 10px;background:#fff;font-size:11px;outline:none}.control input:focus,.control select:focus{border-color:#bed0ff;box-shadow:0 0 0 4px rgba(40,100,220,.07)}
+.filter-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{background:#eef4ff;color:#355ba1;border:1px solid #dbe7ff;border-radius:999px;padding:5px 8px;font-size:9px;font-weight:800}
+.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:2px;margin-bottom:14px}.tab{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 12px;font-size:10px;font-weight:900;cursor:pointer}.tab.active,.tab:hover{background:#edf4ff;color:var(--blue);border-color:#d7e4ff}
+.page{display:none}.page.active{display:block}.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:11px;margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.kpi{padding:15px;position:relative;overflow:hidden}.kpi .label{font-size:10px;color:var(--muted)}.kpi .value{font-size:25px;font-weight:850;margin:5px 0}.kpi .desc{font-size:9px;color:var(--muted)}.kpi .bubble{position:absolute;right:-16px;top:-14px;width:58px;height:58px;border-radius:50%;opacity:.12}
+.grid3{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:14px;margin-bottom:14px}.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:14px}.panel{padding:17px}.panel h3{font-size:14px;margin:0 0 3px}.hint{font-size:10px;color:var(--muted);margin-bottom:10px}
+.chart{height:245px}.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:7px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
+.bar-row{display:grid;grid-template-columns:135px 1fr 43px;align-items:center;gap:8px;margin:9px 0;font-size:10px;cursor:pointer;padding:3px;border-radius:9px}.bar-row:hover{background:#f6f9ff}.bar-bg{height:9px;background:#edf1f7;border-radius:99px;overflow:hidden}.bar{height:100%;border-radius:99px}
+.donut-wrap{height:192px;display:flex;align-items:center;justify-content:center;position:relative}.donut{width:158px;height:158px;border-radius:50%;position:relative}.donut:after{content:"";position:absolute;inset:29px;background:#fff;border-radius:50%}.donut-center{position:absolute;z-index:2;text-align:center}.donut-center b{font-size:27px}.donut-center span{font-size:10px;color:var(--muted)}
+.status-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line);font-size:10px}.pill{padding:4px 8px;border-radius:99px;font-size:9px;font-weight:900}.red{background:#ffe7e8;color:#c93d47}.amber{background:#fff0d8;color:#b67312}.blue{background:#e8efff;color:#315bcc}.purple{background:#eee9ff;color:#6549ca}.green{background:#e7f7ef;color:#137551}
+.insights{background:linear-gradient(135deg,#102346,#244d86);color:#fff;padding:18px;border-radius:18px;box-shadow:var(--shadow)}.insights h3{font-size:14px;margin:0 0 8px}.insight{font-size:10px;line-height:1.55;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.13)}.insight:last-child{border-bottom:0}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:#f8fbff;border:1px solid var(--line);border-radius:15px;padding:13px}.metric .big{font-size:32px;font-weight:850}.metric .small{font-size:10px;color:var(--muted);line-height:1.5}
+.callout{background:#f8fbff;border:1px solid var(--line);border-radius:15px;padding:13px;font-size:10px;line-height:1.6;color:#34445e}.section-title{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
+.table-wrap{overflow:auto;max-height:455px;border:1px solid var(--line);border-radius:15px}table{border-collapse:collapse;width:100%;font-size:10px}th,td{padding:9px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:left}th{position:sticky;top:0;background:#f9fbfd;color:var(--muted);z-index:1}tr.clickable{cursor:pointer}tr.clickable:hover{background:#f5f9ff}.empty{padding:25px;text-align:center;color:var(--muted)}
+.funnel{margin-top:7px}.modal{position:fixed;inset:0;background:rgba(7,14,28,.48);display:none;align-items:center;justify-content:center;padding:18px;z-index:100}.modal.show{display:flex}.modal-card{width:min(930px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:18px;box-shadow:0 30px 70px rgba(0,0,0,.25)}.modal-head{display:flex;justify-content:space-between;gap:10px;align-items:center}.modal-head h3{margin:0}.modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.modal-item{background:#f8fbff;border:1px solid var(--line);border-radius:13px;padding:11px}.modal-item .k{font-size:9px;color:var(--muted);margin-bottom:5px}.modal-item .v{font-size:11px;font-weight:800;line-height:1.4}.modal-two{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:11px}.text-box{background:#f8fbff;border:1px solid var(--line);border-radius:13px;padding:13px}.text-box h4{font-size:11px;margin:0 0 7px}.text-box p{font-size:10px;line-height:1.6;color:#34445e;margin:0}
+@media(max-width:1320px){.control-grid{grid-template-columns:repeat(4,1fr)}}@media(max-width:1100px){.app{grid-template-columns:1fr}.sidebar{display:none}.overview-strip,.kpis{grid-template-columns:repeat(3,1fr)}.grid3,.grid2,.date-row,.modal-grid,.modal-two{grid-template-columns:1fr}}@media(max-width:720px){main{padding:15px}.overview-strip,.kpis,.control-grid{grid-template-columns:1fr 1fr}}@media(max-width:520px){.overview-strip,.kpis,.control-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="logo"></div><div><h2>Dai-ichi Life Việt Nam</h2><small>Dashboard Phân Tích Cuộc Gọi</small></div></div>
+  <div class="env"><i></i> Bản demo tương tác</div>
+  <div class="nav-title">Phân tích</div>
+  <div class="nav">
+    <button class="nav-btn active" data-page="tongquan">▣ Tổng quan điều hành</button>
+    <button class="nav-btn" data-page="chatluong">◫ Chất lượng cuộc gọi</button>
+    <button class="nav-btn" data-page="vanhanh">◌ Hiệu suất vận hành</button>
+    <button class="nav-btn" data-page="compliance">✓ Tuân thủ & QC</button>
+    <button class="nav-btn" data-page="khachhang">◇ Insight khách hàng</button>
+    <button class="nav-btn" data-page="kinhdoanh">↗ Bán hàng & giữ chân</button>
+    <button class="nav-btn" data-page="coaching">♟ Coaching nhân viên</button>
+  </div>
+  <div class="scope"><h4>Phạm vi dữ liệu</h4><p>Chỉ sử dụng các cột hiện tại bạn đã cung cấp. Mỗi dòng dữ liệu demo đại diện cho 1 cuộc gọi. Không thêm CSAT, NPS, FCR, SLA hay các KPI chưa có dữ liệu nguồn.</p></div>
+</aside>
+
+<main>
+  <div class="header">
+    <div><h1 id="pageTitle">Dashboard Phân Tích Cuộc Gọi</h1><p id="pageSubtitle">Dai-ichi Life Việt Nam • Theo dõi chất lượng, vận hành, tuân thủ, insight khách hàng và cơ hội kinh doanh.</p></div>
+    <div class="header-actions"><button class="btn soft" id="exportBtn">Xuất CSV đang lọc</button><button class="btn" id="resetBtn">Đặt lại bộ lọc</button></div>
+  </div>
+
+  <div class="overview-strip">
+    <div class="strip-card"><div class="l">Cuộc gọi trong phạm vi</div><div class="v" id="heroCalls">0</div><div class="s">Sau tất cả bộ lọc</div></div>
+    <div class="strip-card"><div class="l">Nhân viên hoạt động</div><div class="v" id="heroAgents">0</div><div class="s">Số agent khác nhau</div></div>
+    <div class="strip-card"><div class="l">Cảm xúc tiêu cực</div><div class="v" id="heroNeg">0%</div><div class="s">Theo sentiment</div></div>
+    <div class="strip-card"><div class="l">Cơ hội bán hàng cao</div><div class="v" id="heroSales">0</div><div class="s">sales_probability ≥ 70%</div></div>
+  </div>
+
+  <section class="filters">
+    <div class="filters-head">
+      <div><strong>Bộ lọc phân tích</strong><span>mọi biểu đồ cập nhật tức thời</span></div>
+      <div class="quick"><button class="quick-btn active" data-days="all">Toàn bộ</button><button class="quick-btn" data-days="7">7 ngày</button><button class="quick-btn" data-days="14">14 ngày</button><button class="quick-btn" data-days="30">30 ngày</button></div>
+    </div>
+
+    <div class="date-row">
+      <div class="date-slider">
+        <div class="date-title"><span>Kéo để chọn khoảng ngày</span><b id="rangeText"></b></div>
+        <div class="dual"><div class="track"></div><div class="fill" id="rangeFill"></div><input id="rangeMin" type="range"><input id="rangeMax" type="range"></div>
+      </div>
+      <div class="date-inputs">
+        <div class="control"><label>Từ ngày</label><input id="fromDate" type="date"></div>
+        <div class="control"><label>Đến ngày</label><input id="toDate" type="date"></div>
+      </div>
+    </div>
+
+    <div class="control-grid">
+      <div class="control"><label>Tìm kiếm</label><input id="searchFilter" type="text" placeholder="Call ID, khách hàng, agent..."></div>
+      <div class="control"><label>Nhân viên</label><select id="agentFilter"><option value="">Tất cả</option></select></div>
+      <div class="control"><label>Intent</label><select id="intentFilter"><option value="">Tất cả</option></select></div>
+      <div class="control"><label>Sentiment</label><select id="sentimentFilter"><option value="">Tất cả</option><option>Positive</option><option>Neutral</option><option>Negative</option></select></div>
+      <div class="control"><label>Mức rủi ro</label><select id="riskFilter"><option value="">Tất cả</option><option>Low</option><option>Medium</option><option>High</option></select></div>
+      <div class="control"><label>Ưu tiên QC</label><select id="qcFilter"><option value="">Tất cả</option><option>Low</option><option>Medium</option><option>High</option></select></div>
+      <div class="control"><label>Trạng thái</label><select id="statusFilter"><option value="">Tất cả</option><option>Đã hoàn tất</option><option>Đã review</option><option>Chờ QC</option></select></div>
+    </div>
+
+    <div class="filter-bottom"><div class="chips" id="activeFilters"></div><button class="btn primary" id="applyBtn">Áp dụng bộ lọc</button></div>
+  </section>
+
+  <div class="tabs">
+    <button class="tab nav-btn active" data-page="tongquan">Tổng quan</button>
+    <button class="tab nav-btn" data-page="chatluong">Chất lượng</button>
+    <button class="tab nav-btn" data-page="vanhanh">Vận hành</button>
+    <button class="tab nav-btn" data-page="compliance">Tuân thủ & QC</button>
+    <button class="tab nav-btn" data-page="khachhang">Khách hàng</button>
+    <button class="tab nav-btn" data-page="kinhdoanh">Bán hàng & giữ chân</button>
+    <button class="tab nav-btn" data-page="coaching">Coaching</button>
+  </div>
+
+  <section class="page active" id="tongquan">
+    <div class="kpis">
+      <div class="card kpi"><div class="label">Tổng cuộc gọi</div><div class="value" id="kCalls">0</div><div class="desc">COUNT(call_id)</div><div class="bubble" style="background:var(--blue)"></div></div>
+      <div class="card kpi"><div class="label">Điểm chất lượng TB</div><div class="value" id="kScore">0</div><div class="desc">AVG(score)</div><div class="bubble" style="background:var(--green)"></div></div>
+      <div class="card kpi"><div class="label">Tỷ lệ tuân thủ</div><div class="value" id="kCompliance">0%</div><div class="desc">compliance = true</div><div class="bubble" style="background:var(--purple)"></div></div>
+      <div class="card kpi"><div class="label">AHT</div><div class="value" id="kAht">0m</div><div class="desc">AVG(call_duration_sec)</div><div class="bubble" style="background:var(--cyan)"></div></div>
+      <div class="card kpi"><div class="label">Cần QC</div><div class="value" id="kQc">0%</div><div class="desc">qc_required = true</div><div class="bubble" style="background:var(--amber)"></div></div>
+      <div class="card kpi"><div class="label">Rủi ro cao</div><div class="value" id="kRisk">0%</div><div class="desc">risk_level = High</div><div class="bubble" style="background:var(--red)"></div></div>
+    </div>
+
+    <div class="grid3">
+      <div class="card panel"><h3>Xu hướng chất lượng & tuân thủ</h3><div class="hint">Điểm trung bình theo tuần</div><div class="chart"><svg id="trendChart" viewBox="0 0 640 245" width="100%" height="100%"></svg></div><div class="legend"><span><i class="dot" style="background:var(--blue)"></i>Điểm chất lượng</span><span><i class="dot" style="background:var(--purple)"></i>Tỷ lệ tuân thủ</span></div></div>
+      <div class="card panel"><h3>Cảm xúc khách hàng</h3><div class="hint">Phân bổ sentiment</div><div class="donut-wrap"><div id="sentimentDonut" class="donut"></div><div class="donut-center"><b id="sentTotal">0</b><br><span>cuộc gọi</span></div></div><div class="legend" style="justify-content:center"><span><i class="dot" style="background:var(--green)"></i>Tích cực</span><span><i class="dot" style="background:var(--amber)"></i>Trung tính</span><span><i class="dot" style="background:var(--red)"></i>Tiêu cực</span></div></div>
+      <div class="card panel"><h3>Tín hiệu cần ưu tiên</h3><div class="hint">Rủi ro, retention, QC và tuân thủ</div><div id="riskSignals"></div></div>
+    </div>
+
+    <div class="grid2">
+      <div class="insights"><h3>Insight quản trị</h3><div id="overviewInsights"></div></div>
+      <div class="card panel"><h3>Phân bố Intent</h3><div class="hint">Bấm trực tiếp vào thanh để lọc toàn dashboard</div><div id="overviewIntentBars"></div></div>
+    </div>
+  </section>
+
+  <section class="page" id="chatluong">
+    <div class="grid2">
+      <div class="card panel"><h3>Điểm chất lượng theo nhân viên</h3><div class="hint">Bấm tên agent để cross-filter</div><div id="qualityAgentBars"></div></div>
+      <div class="card panel"><h3>Tóm tắt chất lượng</h3><div class="metric-grid"><div class="metric"><div class="big" id="qualityGood">0%</div><div class="small">Cuộc gọi có score ≥ 85</div></div><div class="metric"><div class="big" id="qualityLow">0%</div><div class="small">Cuộc gọi có score &lt; 70</div></div></div><div class="callout" id="qualityCallout" style="margin-top:10px"></div></div>
+    </div>
+    <div class="card panel"><div class="section-title"><div><h3>Cuộc gọi chất lượng thấp</h3><div class="hint">Click một dòng để xem chi tiết</div></div></div><div class="table-wrap"><table><thead><tr><th>Call ID</th><th>Ngày</th><th>Nhân viên</th><th>Intent</th><th>Score</th><th>Sentiment</th><th>Coaching</th><th>Trạng thái</th></tr></thead><tbody id="qualityTable"></tbody></table></div></div>
+  </section>
+
+  <section class="page" id="vanhanh">
+    <div class="kpis">
+      <div class="card kpi"><div class="label">AHT trung bình</div><div class="value" id="opAht">0m</div><div class="desc">AVG duration</div></div>
+      <div class="card kpi"><div class="label">Call &gt; 12 phút</div><div class="value" id="opLong">0%</div><div class="desc">Duration threshold</div></div>
+      <div class="card kpi"><div class="label">Đã review</div><div class="value" id="opReviewed">0%</div><div class="desc">status = Đã review</div></div>
+      <div class="card kpi"><div class="label">Chờ QC</div><div class="value" id="opPending">0</div><div class="desc">status = Chờ QC</div></div>
+      <div class="card kpi"><div class="label">Agent hoạt động</div><div class="value" id="opAgents">0</div><div class="desc">DISTINCT agent_name</div></div>
+      <div class="card kpi"><div class="label">Cuộc gọi/ngày</div><div class="value" id="opPerDay">0</div><div class="desc">COUNT / distinct date</div></div>
+    </div>
+    <div class="grid2"><div class="card panel"><h3>Volume theo nhân viên</h3><div class="hint">Bấm agent để lọc</div><div id="volumeAgentBars"></div></div><div class="card panel"><h3>AHT theo Intent</h3><div class="hint">Intent nào kéo dài thời gian xử lý nhất</div><div id="durationIntentBars"></div></div></div>
+  </section>
+
+  <section class="page" id="compliance">
+    <div class="grid2">
+      <div class="card panel"><h3>Tổng quan tuân thủ</h3><div class="metric-grid"><div class="metric"><div class="big" id="compRate">0%</div><div class="small">Tỷ lệ đạt compliance</div></div><div class="metric"><div class="big" id="compBreach">0</div><div class="small">Cuộc gọi chưa đạt</div></div></div><div class="callout" id="compNote" style="margin-top:10px"></div></div>
+      <div class="card panel"><h3>Ưu tiên QC</h3><div class="hint">Theo qc_priority</div><div id="qcPriorityBars"></div></div>
+    </div>
+    <div class="card panel"><div class="section-title"><div><h3>Hàng đợi QC</h3><div class="hint">Ưu tiên High → Medium → Low</div></div></div><div class="table-wrap"><table><thead><tr><th>Call ID</th><th>Ngày</th><th>Nhân viên</th><th>Tuân thủ</th><th>Risk</th><th>Ưu tiên QC</th><th>Risk Tag</th><th>Score</th></tr></thead><tbody id="qcTable"></tbody></table></div></div>
+  </section>
+
+  <section class="page" id="khachhang">
+    <div class="grid3">
+      <div class="card panel"><h3>Intent khách hàng</h3><div class="hint">Bấm để lọc</div><div id="customerIntentBars"></div></div>
+      <div class="card panel"><h3>Vấn đề khách hàng</h3><div class="hint">Theo customer_issue</div><div id="issueBars"></div></div>
+      <div class="card panel"><h3>Cảm xúc tiêu cực</h3><div class="metric"><div class="big" id="negRate">0%</div><div class="small">sentiment = Negative</div></div><div class="callout" id="negativeCallout" style="margin-top:10px"></div></div>
+    </div>
+    <div class="insights"><h3>Insight khách hàng</h3><div id="customerInsights"></div></div>
+  </section>
+
+  <section class="page" id="kinhdoanh">
+    <div class="grid2">
+      <div class="card panel"><h3>Phễu Customer Stage</h3><div class="hint">Theo customer_stage</div><div id="salesFunnel" class="funnel"></div></div>
+      <div class="card panel"><h3>Cơ hội cần ưu tiên</h3><div class="metric-grid"><div class="metric"><div class="big" id="highSales">0</div><div class="small">sales_probability ≥ 70%</div></div><div class="metric"><div class="big" id="highRetention">0</div><div class="small">retention_risk = High</div></div></div><div class="callout" id="salesCallout" style="margin-top:10px"></div></div>
+    </div>
+    <div class="card panel"><div class="section-title"><div><h3>Danh sách Sales & Retention</h3><div class="hint">Click để xem chi tiết cuộc gọi</div></div></div><div class="table-wrap"><table><thead><tr><th>Call ID</th><th>Khách hàng</th><th>Intent</th><th>Stage</th><th>Sales %</th><th>Cơ hội</th><th>Retention Risk</th><th>Khuyến nghị</th></tr></thead><tbody id="salesTable"></tbody></table></div></div>
+  </section>
+
+  <section class="page" id="coaching">
+    <div class="grid2"><div class="card panel"><h3>Nhóm coaching</h3><div class="hint">Theo coaching_category</div><div id="coachingBars"></div></div><div class="card panel"><h3>Agent cần coaching ưu tiên</h3><div class="hint">Chỉ số demo từ score + compliance + QC</div><div id="coachAgentBars"></div></div></div>
+    <div class="card panel"><h3>Đề xuất coaching</h3><div id="coachRecommendations"></div></div>
+  </section>
+</main>
+</div>
+
+<div class="modal" id="detailModal"><div class="modal-card">
+  <div class="modal-head"><div><h3 id="modalTitle">Chi tiết cuộc gọi</h3><div class="hint">Drill-down từ các cột hiện tại</div></div><button class="btn" id="closeModal">Đóng</button></div>
+  <div class="modal-grid" id="modalGrid"></div>
+  <div class="modal-two"><div class="text-box"><h4>Tóm tắt</h4><p id="modalSummary"></p></div><div class="text-box"><h4>Khuyến nghị & câu quan trọng</h4><p id="modalRecommendation"></p></div></div>
+</div></div>
+
+<script>
+const agents=["Anh","Bình","Chi","Dũng","Hạnh","Khánh","Lan","Minh"];
+const intents=["Hỏi quyền lợi","Hỗ trợ bồi thường","Thanh toán phí","Tái tục hợp đồng","Khiếu nại","Tư vấn sản phẩm"];
+const topics=["Quyền lợi","Quy trình bồi thường","Thanh toán","Ưu đãi tái tục","Dịch vụ","Sản phẩm mới"];
+const sentiments=["Positive","Neutral","Negative"], risks=["Low","Medium","High"];
+const stages=["Nhận biết","Cân nhắc","Quan tâm","Theo dõi","Chuyển đổi"];
+const issues=["Cần làm rõ quyền lợi","Hỏi về bồi thường","Lo ngại thanh toán","Không hài lòng dịch vụ","Cân nhắc tái tục","So sánh sản phẩm"];
+const coachingCats=["Kỹ năng đồng cảm","Kiến thức sản phẩm","Compliance","Kiểm soát cuộc gọi","Kỹ năng chốt"];
+const recommendations=["Gọi lại follow-up","Giải thích thêm quyền lợi","Chuyển cấp xử lý","Gửi thông tin","Tái tục / cross-sell phù hợp","Không cần hành động"];
+const riskTags=["Thiếu disclosure","Khiếu nại","Ý định hủy","Chậm bồi thường","Không có"], statuses=["Đã hoàn tất","Đã review","Chờ QC"];
+const qs=id=>document.getElementById(id); const rand=a=>a[Math.floor(Math.random()*a.length)]; const r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0; const pct=(a,b)=>b?Math.round(a/b*100):0;
+const group=(arr,key)=>arr.reduce((o,d)=>((o[d[key]]??=[]).push(d),o),{});
+
+const data=[], base=new Date(2026,8,1);
+for(let i=1;i<=260;i++){
+  const dt=new Date(base);dt.setDate(base.getDate()+r(0,35));
+  const sentiment=rand(sentiments),risk=rand(risks),compliance=Math.random()>(risk==="High"?.20:.08);
+  const score=Math.max(45,Math.min(99,r(68,96)+(sentiment==="Positive"?4:sentiment==="Negative"?-9:0)-(risk==="High"?6:0)-(!compliance?4:0)));
+  const qc=score<75||risk==="High"||!compliance||sentiment==="Negative";
+  const intent=rand(intents),issue=rand(issues),customer="Khách hàng "+i;
+  data.push({call_id:"CALL-"+String(i).padStart(4,"0"),call_date:dt.toISOString().slice(0,10),call_duration_sec:r(120,1100),
+    customer_name:customer,customer_phone:"09xx xxx "+r(100,999),agent_name:rand(agents),intent,topic:rand(topics),
+    caller_type:Math.random()>.35?"Khách hàng hiện hữu":"Khách hàng tiềm năng",sentiment,
+    summary:`${customer} liên hệ về ${intent.toLowerCase()}. Vấn đề chính: ${issue.toLowerCase()}.`,
+    customer_issue:issue,compliance,recommendation:rand(recommendations),risk_level:risk,retention_risk:rand(risks),
+    sales_opportunity_level:rand(risks),sales_probability:r(5,95),customer_stage:rand(stages),qc_required:qc,
+    qc_priority:qc?((risk==="High"||!compliance)?"High":"Medium"):"Low",coaching_category:rand(coachingCats),
+    highlighted_risk_tags:rand(riskTags),kpi_suggestions:rand(["Giảm AHT","Cải thiện compliance","Tăng discovery","Cải thiện closing","Theo dõi retention"]),
+    important_sentences:`Khách hàng nhấn mạnh: ${issue}.`,score,status:rand(statuses)});
+}
+const allDates=[...new Set(data.map(x=>x.call_date))].sort(),minDate=allDates[0],maxDate=allDates.at(-1);
+qs("fromDate").value=minDate;qs("toDate").value=maxDate;qs("rangeMin").min=0;qs("rangeMin").max=allDates.length-1;qs("rangeMin").value=0;qs("rangeMax").min=0;qs("rangeMax").max=allDates.length-1;qs("rangeMax").value=allDates.length-1;
+[...new Set(data.map(x=>x.agent_name))].sort().forEach(x=>qs("agentFilter").innerHTML+=`<option>${x}</option>`);
+[...new Set(data.map(x=>x.intent))].sort().forEach(x=>qs("intentFilter").innerHTML+=`<option>${x}</option>`);
+
+function paintRange(){let a=+qs("rangeMin").value,b=+qs("rangeMax").value;if(a>b)[a,b]=[b,a];let m=allDates.length-1;qs("rangeFill").style.left=(a/m*100)+"%";qs("rangeFill").style.right=(100-b/m*100)+"%";qs("rangeText").textContent=`${allDates[a]} → ${allDates[b]}`}
+function sliderToDates(){let a=+qs("rangeMin").value,b=+qs("rangeMax").value;if(a>b){if(document.activeElement===qs("rangeMin"))qs("rangeMin").value=b;else qs("rangeMax").value=a;a=+qs("rangeMin").value;b=+qs("rangeMax").value}qs("fromDate").value=allDates[a];qs("toDate").value=allDates[b];paintRange();render()}
+function datesToSlider(){let a=Math.max(0,allDates.indexOf(qs("fromDate").value)),b=allDates.indexOf(qs("toDate").value);if(b<0)b=allDates.length-1;if(a>b)[a,b]=[b,a];qs("rangeMin").value=a;qs("rangeMax").value=b;paintRange()}
+qs("rangeMin").addEventListener("input",sliderToDates);qs("rangeMax").addEventListener("input",sliderToDates);qs("fromDate").addEventListener("change",()=>{datesToSlider();render()});qs("toDate").addEventListener("change",()=>{datesToSlider();render()});paintRange();
+
+document.querySelectorAll(".quick-btn").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".quick-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");if(btn.dataset.days==="all"){qs("fromDate").value=minDate;qs("toDate").value=maxDate}else{let end=new Date(maxDate),start=new Date(maxDate);start.setDate(end.getDate()-parseInt(btn.dataset.days)+1);let s=start.toISOString().slice(0,10);qs("fromDate").value=allDates.find(d=>d>=s)||minDate;qs("toDate").value=maxDate}datesToSlider();render()}));
+
+function filtered(){let s=qs("searchFilter").value.trim().toLowerCase();return data.filter(d=>(!s||[d.call_id,d.customer_name,d.agent_name,d.intent].join(" ").toLowerCase().includes(s))&&d.call_date>=qs("fromDate").value&&d.call_date<=qs("toDate").value&&(!qs("agentFilter").value||d.agent_name===qs("agentFilter").value)&&(!qs("intentFilter").value||d.intent===qs("intentFilter").value)&&(!qs("sentimentFilter").value||d.sentiment===qs("sentimentFilter").value)&&(!qs("riskFilter").value||d.risk_level===qs("riskFilter").value)&&(!qs("qcFilter").value||d.qc_priority===qs("qcFilter").value)&&(!qs("statusFilter").value||d.status===qs("statusFilter").value))}
+function bars(items,color="#2864dc",suffix="",field=""){if(!items.length)return'<div class="empty">Không có dữ liệu</div>';let m=Math.max(...items.map(x=>x.v),1);return items.map(x=>`<div class="bar-row" ${field?`data-field="${field}" data-value="${x.k}"`:""}><div>${x.k}</div><div class="bar-bg"><div class="bar" style="width:${x.v/m*100}%;background:${color}"></div></div><b>${x.v}${suffix}</b></div>`).join("")}
+function attachCross(){document.querySelectorAll("[data-field]").forEach(el=>el.addEventListener("click",()=>{if(el.dataset.field==="intent")qs("intentFilter").value=el.dataset.value;if(el.dataset.field==="agent")qs("agentFilter").value=el.dataset.value;render()}))}
+function renderTrend(f){const svg=qs("trendChart");svg.innerHTML="";const W=640,H=245,p=35,weeks={};f.forEach(d=>{let dt=new Date(d.call_date),wk="W"+Math.ceil(dt.getDate()/7);(weeks[wk]??=[]).push(d)});let keys=Object.keys(weeks).sort();if(!keys.length){svg.innerHTML='<text x="320" y="125" text-anchor="middle" font-size="12" fill="#7f8ca3">Không có dữ liệu</text>';return}let q=keys.map(k=>avg(weeks[k].map(x=>x.score))),c=keys.map(k=>pct(weeks[k].filter(x=>x.compliance).length,weeks[k].length)),min=50,max=100;function pt(a,i){let x=p+i*((W-2*p)/Math.max(keys.length-1,1)),y=H-p-(a[i]-min)/(max-min)*(H-2*p);return[x,y]}for(let yv=60;yv<=100;yv+=10){let y=H-p-(yv-min)/(max-min)*(H-2*p);svg.innerHTML+=`<line x1="${p}" y1="${y}" x2="${W-p}" y2="${y}" stroke="#e8edf5"/><text x="5" y="${y+4}" font-size="10" fill="#8290a7">${yv}</text>`}function path(a,color){let d=a.map((v,i)=>{let[x,y]=pt(a,i);return`${i?"L":"M"}${x},${y}`}).join(" ");svg.innerHTML+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`;a.forEach((v,i)=>{let[x,y]=pt(a,i);svg.innerHTML+=`<circle cx="${x}" cy="${y}" r="4" fill="${color}"/><text x="${x}" y="${H-8}" text-anchor="middle" font-size="10" fill="#8290a7">${keys[i]}</text>`})}path(q,"#2864dc");path(c,"#7358d8")}
+function renderSentiment(f){let c={Positive:0,Neutral:0,Negative:0};f.forEach(x=>c[x.sentiment]++);let t=Math.max(f.length,1),a=c.Positive/t*360,b=c.Neutral/t*360;qs("sentimentDonut").style.background=`conic-gradient(#1aa16f 0 ${a}deg,#eda333 ${a}deg ${a+b}deg,#dc4c55 ${a+b}deg 360deg)`;qs("sentTotal").textContent=f.length}
+function renderFunnel(f){let order=stages,g=group(f,"customer_stage"),vals=order.map(k=>({k,v:(g[k]||[]).length})),m=Math.max(...vals.map(x=>x.v),1);qs("salesFunnel").innerHTML=vals.map((x,i)=>`<div style="margin:9px auto;width:${45+55*x.v/m}%;background:${["#e8efff","#d7e4ff","#bdd0ff","#8aaeff","#2864dc"][i]};color:${i===4?"#fff":"#15315f"};padding:10px;border-radius:9px;text-align:center;font-size:10px;font-weight:900">${x.k} • ${x.v}</div>`).join("")}
+function updateChips(){let html=`<span class="chip">${qs("fromDate").value} → ${qs("toDate").value}</span>`;if(qs("searchFilter").value)html+=`<span class="chip">Tìm: ${qs("searchFilter").value}</span>`;[["Agent","agentFilter"],["Intent","intentFilter"],["Sentiment","sentimentFilter"],["Risk","riskFilter"],["QC","qcFilter"],["Trạng thái","statusFilter"]].forEach(([k,id])=>{if(qs(id).value)html+=`<span class="chip">${k}: ${qs(id).value}</span>`});qs("activeFilters").innerHTML=html}
+function renderTables(f){let low=f.filter(x=>x.score<75).sort((a,b)=>a.score-b.score).slice(0,40);qs("qualityTable").innerHTML=low.length?low.map(x=>`<tr class="clickable" data-id="${x.call_id}"><td>${x.call_id}</td><td>${x.call_date}</td><td>${x.agent_name}</td><td>${x.intent}</td><td><b>${x.score}</b></td><td>${x.sentiment}</td><td>${x.coaching_category}</td><td>${x.status}</td></tr>`).join(""):`<tr><td colspan="8" class="empty">Không có dữ liệu</td></tr>`;let order={High:0,Medium:1,Low:2},qc=f.filter(x=>x.qc_required).sort((a,b)=>order[a.qc_priority]-order[b.qc_priority]).slice(0,50);qs("qcTable").innerHTML=qc.length?qc.map(x=>`<tr class="clickable" data-id="${x.call_id}"><td>${x.call_id}</td><td>${x.call_date}</td><td>${x.agent_name}</td><td>${x.compliance?"Đạt":"Chưa đạt"}</td><td>${x.risk_level}</td><td>${x.qc_priority}</td><td>${x.highlighted_risk_tags}</td><td>${x.score}</td></tr>`).join(""):`<tr><td colspan="8" class="empty">Không có dữ liệu</td></tr>`;let sales=f.filter(x=>x.sales_probability>=65||x.retention_risk==="High").sort((a,b)=>b.sales_probability-a.sales_probability).slice(0,50);qs("salesTable").innerHTML=sales.length?sales.map(x=>`<tr class="clickable" data-id="${x.call_id}"><td>${x.call_id}</td><td>${x.customer_name}</td><td>${x.intent}</td><td>${x.customer_stage}</td><td>${x.sales_probability}%</td><td>${x.sales_opportunity_level}</td><td>${x.retention_risk}</td><td>${x.recommendation}</td></tr>`).join(""):`<tr><td colspan="8" class="empty">Không có dữ liệu</td></tr>`;document.querySelectorAll("tr.clickable").forEach(tr=>tr.addEventListener("click",()=>openDetail(tr.dataset.id)))}
+function openDetail(id){let x=data.find(d=>d.call_id===id);if(!x)return;qs("modalTitle").textContent=`Chi tiết cuộc gọi • ${x.call_id}`;let fields=[["Ngày",x.call_date],["Thời lượng",Math.round(x.call_duration_sec/60)+" phút"],["Khách hàng",x.customer_name],["Nhân viên",x.agent_name],["Intent",x.intent],["Topic",x.topic],["Caller type",x.caller_type],["Sentiment",x.sentiment],["Điểm chất lượng",x.score],["Tuân thủ",x.compliance?"Đạt":"Chưa đạt"],["Risk",x.risk_level],["Retention risk",x.retention_risk],["Sales probability",x.sales_probability+"%"],["Customer stage",x.customer_stage],["Ưu tiên QC",x.qc_priority],["Trạng thái",x.status]];qs("modalGrid").innerHTML=fields.map(([k,v])=>`<div class="modal-item"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");qs("modalSummary").textContent=x.summary;qs("modalRecommendation").textContent=x.recommendation+" • "+x.important_sentences+" • Risk tag: "+x.highlighted_risk_tags;qs("detailModal").classList.add("show")}
+qs("closeModal").addEventListener("click",()=>qs("detailModal").classList.remove("show"));qs("detailModal").addEventListener("click",e=>{if(e.target.id==="detailModal")qs("detailModal").classList.remove("show")});
+
+function render(){updateChips();let f=filtered(),n=f.length,gAgent=group(f,"agent_name"),gIntent=Object.entries(group(f,"intent")).map(([k,v])=>({k,v:v.length})).sort((a,b)=>b.v-a.v);
+qs("heroCalls").textContent=n;qs("heroAgents").textContent=Object.keys(gAgent).length;qs("heroNeg").textContent=pct(f.filter(x=>x.sentiment==="Negative").length,n)+"%";qs("heroSales").textContent=f.filter(x=>x.sales_probability>=70).length;
+qs("kCalls").textContent=n;qs("kScore").textContent=avg(f.map(x=>x.score)).toFixed(1);qs("kCompliance").textContent=pct(f.filter(x=>x.compliance).length,n)+"%";qs("kAht").textContent=(avg(f.map(x=>x.call_duration_sec))/60).toFixed(1)+"m";qs("kQc").textContent=pct(f.filter(x=>x.qc_required).length,n)+"%";qs("kRisk").textContent=pct(f.filter(x=>x.risk_level==="High").length,n)+"%";
+renderTrend(f);renderSentiment(f);qs("riskSignals").innerHTML=[["Rủi ro vận hành cao",f.filter(x=>x.risk_level==="High").length,"red"],["Retention risk cao",f.filter(x=>x.retention_risk==="High").length,"amber"],["Cần QC",f.filter(x=>x.qc_required).length,"blue"],["Chưa đạt tuân thủ",f.filter(x=>!x.compliance).length,"purple"]].map(x=>`<div class="status-item"><span>${x[0]}</span><span class="pill ${x[2]}">${x[1]}</span></div>`).join("");
+qs("overviewIntentBars").innerHTML=bars(gIntent.slice(0,6),"#2864dc","","intent");let best=Object.entries(gAgent).map(([k,v])=>[k,avg(v.map(x=>x.score))]).sort((a,b)=>b[1]-a[1])[0],top=gIntent[0];qs("overviewInsights").innerHTML=[`• <b>${top?top.k:"N/A"}</b> là intent có volume lớn nhất trong phạm vi hiện tại.`,`• Cảm xúc tiêu cực chiếm <b>${pct(f.filter(x=>x.sentiment==="Negative").length,n)}%</b> tổng cuộc gọi.`,`• Có <b>${f.filter(x=>!x.compliance).length}</b> cuộc gọi chưa đạt tuân thủ.`,`• Agent có điểm chất lượng trung bình cao nhất: <b>${best?best[0]:"N/A"}</b> (${best?best[1].toFixed(1):0}).`,`• Có <b>${f.filter(x=>x.sales_probability>=70).length}</b> cuộc gọi có sales probability ≥ 70%.`].map(x=>`<div class="insight">${x}</div>`).join("");
+qs("qualityAgentBars").innerHTML=bars(Object.entries(gAgent).map(([k,v])=>({k,v:Math.round(avg(v.map(x=>x.score)))})).sort((a,b)=>b.v-a.v),"#1aa16f","","agent");qs("qualityGood").textContent=pct(f.filter(x=>x.score>=85).length,n)+"%";qs("qualityLow").textContent=pct(f.filter(x=>x.score<70).length,n)+"%";qs("qualityCallout").textContent="Trang này tập trung vào score, sentiment, coaching_category, compliance, risk và status để tìm những cuộc gọi cần nghe lại hoặc coaching.";
+qs("opAht").textContent=(avg(f.map(x=>x.call_duration_sec))/60).toFixed(1)+"m";qs("opLong").textContent=pct(f.filter(x=>x.call_duration_sec>720).length,n)+"%";qs("opReviewed").textContent=pct(f.filter(x=>x.status==="Đã review").length,n)+"%";qs("opPending").textContent=f.filter(x=>x.status==="Chờ QC").length;qs("opAgents").textContent=Object.keys(gAgent).length;let days=new Set(f.map(x=>x.call_date)).size||1;qs("opPerDay").textContent=(n/days).toFixed(1);qs("volumeAgentBars").innerHTML=bars(Object.entries(gAgent).map(([k,v])=>({k,v:v.length})).sort((a,b)=>b.v-a.v),"#2864dc","","agent");qs("durationIntentBars").innerHTML=bars(Object.entries(group(f,"intent")).map(([k,v])=>({k,v:Math.round(avg(v.map(x=>x.call_duration_sec))/60)})).sort((a,b)=>b.v-a.v),"#24a8d8","m");
+qs("compRate").textContent=pct(f.filter(x=>x.compliance).length,n)+"%";qs("compBreach").textContent=f.filter(x=>!x.compliance).length;qs("compNote").textContent="Hàng đợi QC sử dụng trực tiếp qc_required, qc_priority, compliance, risk_level, highlighted_risk_tags và score.";qs("qcPriorityBars").innerHTML=bars(Object.entries(group(f,"qc_priority")).map(([k,v])=>({k,v:v.length})).sort((a,b)=>b.v-a.v),"#7358d8");
+qs("customerIntentBars").innerHTML=bars(gIntent.slice(0,6),"#2864dc","","intent");qs("issueBars").innerHTML=bars(Object.entries(group(f,"customer_issue")).map(([k,v])=>({k,v:v.length})).sort((a,b)=>b.v-a.v).slice(0,6),"#eda333");let neg=f.filter(x=>x.sentiment==="Negative");qs("negRate").textContent=pct(neg.length,n)+"%";qs("negativeCallout").textContent=`Có ${neg.length} cuộc gọi Negative trong phạm vi hiện tại.`;let negIntent=Object.entries(group(neg,"intent")).map(([k,v])=>({k,v:v.length})).sort((a,b)=>b.v-a.v)[0];qs("customerInsights").innerHTML=[`• Intent có nhiều Negative nhất: <b>${negIntent?negIntent.k:"N/A"}</b>.`,`• Có <b>${f.filter(x=>x.retention_risk==="High").length}</b> cuộc gọi retention risk cao.`,`• Customer issue cho biết nhóm vấn đề nên ưu tiên tối ưu script hoặc guideline xử lý.`].map(x=>`<div class="insight">${x}</div>`).join("");
+renderFunnel(f);qs("highSales").textContent=f.filter(x=>x.sales_probability>=70).length;qs("highRetention").textContent=f.filter(x=>x.retention_risk==="High").length;qs("salesCallout").textContent="Danh sách ưu tiên dựa trực tiếp trên sales_probability, sales_opportunity_level, customer_stage, retention_risk và recommendation.";
+qs("coachingBars").innerHTML=bars(Object.entries(group(f,"coaching_category")).map(([k,v])=>({k,v:v.length})).sort((a,b)=>b.v-a.v),"#7358d8");qs("coachAgentBars").innerHTML=bars(Object.entries(gAgent).map(([k,v])=>({k,v:Math.round(100-avg(v.map(x=>x.score))+v.filter(x=>!x.compliance).length*3+v.filter(x=>x.qc_required).length)})).sort((a,b)=>b.v-a.v),"#dc4c55");let topCoach=Object.entries(group(f,"coaching_category")).sort((a,b)=>b[1].length-a[1].length)[0];qs("coachRecommendations").innerHTML=`<div class="callout">Nhóm coaching xuất hiện nhiều nhất là <b>${topCoach?topCoach[0]:"N/A"}</b>. Chỉ số ưu tiên agent là chỉ số demo được tính từ score thấp hơn, số compliance breach và số call cần QC.</div>`;
+renderTables(f);attachCross()}
+
+["searchFilter","agentFilter","intentFilter","sentimentFilter","riskFilter","qcFilter","statusFilter"].forEach(id=>{qs(id).addEventListener("input",render);qs(id).addEventListener("change",render)});qs("applyBtn").addEventListener("click",render);
+qs("resetBtn").addEventListener("click",()=>{qs("searchFilter").value="";["agentFilter","intentFilter","sentimentFilter","riskFilter","qcFilter","statusFilter"].forEach(id=>qs(id).value="");qs("fromDate").value=minDate;qs("toDate").value=maxDate;document.querySelectorAll(".quick-btn").forEach(b=>b.classList.remove("active"));document.querySelector('.quick-btn[data-days="all"]').classList.add("active");datesToSlider();render()});
+document.querySelectorAll(".nav-btn").forEach(btn=>btn.addEventListener("click",()=>{let page=btn.dataset.page;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));qs(page).classList.add("active");document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.querySelectorAll(`.nav-btn[data-page="${page}"]`).forEach(b=>b.classList.add("active"));let meta={tongquan:["Dashboard Phân Tích Cuộc Gọi","Dai-ichi Life Việt Nam • Theo dõi chất lượng, vận hành, tuân thủ, insight khách hàng và cơ hội kinh doanh."],chatluong:["Chất lượng cuộc gọi","Phân tích score, sentiment và coaching theo nhân viên."],vanhanh:["Hiệu suất vận hành","Theo dõi thời lượng, volume, trạng thái và khối lượng QC."],compliance:["Tuân thủ & QC","Theo dõi compliance, rủi ro và mức ưu tiên kiểm soát chất lượng."],khachhang:["Insight khách hàng","Phân tích intent, customer issue, sentiment và retention risk."],kinhdoanh:["Bán hàng & giữ chân","Theo dõi customer stage, sales probability và retention risk."],coaching:["Coaching nhân viên","Nhận diện nhóm kỹ năng và agent cần ưu tiên đào tạo."]};qs("pageTitle").textContent=meta[page][0];qs("pageSubtitle").textContent=meta[page][1]}));
+qs("exportBtn").addEventListener("click",()=>{let rows=filtered(),headers=["call_id","call_date","call_duration_sec","customer_name","customer_phone","agent_name","intent","topic","caller_type","sentiment","summary","customer_issue","compliance","recommendation","risk_level","retention_risk","sales_opportunity_level","sales_probability","customer_stage","qc_required","qc_priority","coaching_category","highlighted_risk_tags","kpi_suggestions","important_sentences","score","status"];let csv=headers.join(",")+"\n";rows.forEach(row=>csv+=headers.map(h=>`"${String(row[h]).replaceAll('"','""')}"`).join(",")+"\n");let blob=new Blob([csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="daiichi_dashboard_filtered.csv";a.click();URL.revokeObjectURL(url)});
+render();
+</script>
+</body>
+</html>
