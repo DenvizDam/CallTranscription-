@@ -1,10 +1,10 @@
-import torch
-import librosa
 
-from transformers import (
-    AutoProcessor,
-    AutoModelForSpeechSeq2Seq,
-)
+import subprocess
+from pathlib import Path
+
+import numpy as np
+import torch
+from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
 
 
 # ============================================================
@@ -13,37 +13,27 @@ from transformers import (
 
 MODEL_PATH = "/home/dtphat/projects/PhoWhisper-base"
 
+# Muon dung checkpoint chinh thuc:
+# MODEL_PATH = "vinai/PhoWhisper-base"
+
 SAMPLE_RATE = 16000
 
-SEGMENT_LENGTH_S = 20
-
-DEVICE = (
-    "cuda"
-    if torch.cuda.is_available()
-    else "cpu"
-)
-
-DTYPE = (
-    torch.float16
-    if DEVICE == "cuda"
-    else torch.float32
-)
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DTYPE = torch.float16 if DEVICE == "cuda" else torch.float32
 
 
 # ============================================================
 # LOAD MODEL
 # ============================================================
 
-print("=" * 80)
+print("=" * 60)
 print("Loading PhoWhisper...")
-print("Model :", MODEL_PATH)
+print("Model:", MODEL_PATH)
 print("Device:", DEVICE)
-print("=" * 80)
+print("Dtype:", DTYPE)
+print("=" * 60)
 
-
-processor = AutoProcessor.from_pretrained(
-    MODEL_PATH
-)
+processor = AutoProcessor.from_pretrained(MODEL_PATH)
 
 model = AutoModelForSpeechSeq2Seq.from_pretrained(
     MODEL_PATH,
@@ -51,196 +41,129 @@ model = AutoModelForSpeechSeq2Seq.from_pretrained(
 )
 
 model.to(DEVICE)
-
 model.eval()
 
-
-print("PhoWhisper loaded.")
+print("PhoWhisper loaded successfully.")
+print("Expected sample rate:", processor.feature_extractor.sampling_rate)
 
 
 # ============================================================
-# TRANSCRIBE ONE SEGMENT
+# AUDIO DECODING
 # ============================================================
 
-def transcribe_segment(audio):
+def load_audio(audio_path: str):
     """
-    Transcribe one audio segment.
+    Decode audio using FFmpeg.
+
+    Supports GSM, WAV, MP3, FLAC, etc.
+    Resamples to 16 kHz mono PCM float32.
     """
 
+    path = Path(audio_path)
+
+    if not path.is_file():
+        raise FileNotFoundError(f"Audio not found: {path}")
+
+    command = [
+        "ffmpeg",
+        "-nostdin",
+        "-v", "error",
+        "-i", str(path),
+        "-vn",
+        "-ac", "1",
+        "-ar", str(SAMPLE_RATE),
+        "-f", "f32le",
+        "pipe:1",
+    ]
+
+    try:
+        result = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+    except FileNotFoundError as exc:
+        raise RuntimeError(
+            "FFmpeg is not installed or not in PATH."
+        ) from exc
+    except subprocess.CalledProcessError as exc:
+        error_message = exc.stderr.decode(
+            "utf-8", errors="replace"
+        )
+        raise RuntimeError(
+            f"FFmpeg decode failed: {error_message}"
+        ) from exc
+
+    audio = np.frombuffer(
+        result.stdout,
+        dtype=np.float32
+    ).copy()
+
+    if audio.size == 0:
+        raise ValueError("Decoded audio is empty.")
+
+    if not np.isfinite(audio).all():
+        raise ValueError("Audio contains NaN or Infinity.")
+
+    duration = len(audio) / SAMPLE_RATE
+
+    return audio, duration
+
+
+# ============================================================
+# LONG-FORM TRANSCRIPTION
+# ============================================================
+
+@torch.inference_mode()
+def transcribe_audio(audio_path: str) -> str:
+    """
+    Transcribe Vietnamese audio, including long calls.
+
+    Uses Whisper sequential long-form generation,
+    NOT pipeline chunk_length_s.
+    """
+
+    audio, duration = load_audio(audio_path)
+
+    print(f"Audio: {Path(audio_path).name}")
+    print(f"Duration: {duration:.2f} seconds")
+    print(f"Samples: {len(audio)}")
+    print(f"Sample rate: {SAMPLE_RATE}")
+
+    # IMPORTANT:
+    # truncation=False preserves the full recording.
+    # padding="longest" avoids unnecessary 30s padding.
     inputs = processor(
         audio,
         sampling_rate=SAMPLE_RATE,
         return_tensors="pt",
+        truncation=False,
+        padding="longest",
+        return_attention_mask=True,
     )
 
-    input_features = (
-        inputs.input_features
-        .to(
-            DEVICE,
-            dtype=DTYPE
-        )
+    input_features = inputs.input_features.to(
+        device=DEVICE,
+        dtype=DTYPE,
     )
 
+    attention_mask = inputs.attention_mask.to(DEVICE)
 
-    with torch.no_grad():
+    # Whisper uses timestamps to move through long audio.
+    # No manual 30-second splitting is performed here.
+    generated_ids = model.generate(
+        input_features=input_features,
+        attention_mask=attention_mask,
+        language="vi",
+        task="transcribe",
+        return_timestamps=True,
+        do_sample=False,
+    )
 
-        generated_ids = model.generate(
-            input_features,
-            language="vi",
-            task="transcribe",
-        )
-
-
-    text = processor.batch_decode(
+    transcript = processor.batch_decode(
         generated_ids,
         skip_special_tokens=True,
     )[0]
 
-
-    return text.strip()
-
-
-# ============================================================
-# TRANSCRIBE LONG AUDIO
-# ============================================================
-
-def transcribe_audio(
-    audio_path: str,
-) -> str:
-
-    print()
-    print(
-        f"Transcribing: {audio_path}"
-    )
-
-
-    # --------------------------------------------------------
-    # LOAD AUDIO
-    # --------------------------------------------------------
-
-    audio, sr = librosa.load(
-        audio_path,
-        sr=SAMPLE_RATE,
-        mono=True,
-    )
-
-
-    duration = (
-        len(audio)
-        / SAMPLE_RATE
-    )
-
-
-    print(
-        f"Duration: {duration:.2f}s"
-    )
-
-
-    # --------------------------------------------------------
-    # SEGMENT
-    # --------------------------------------------------------
-
-    segment_samples = (
-        SEGMENT_LENGTH_S
-        * SAMPLE_RATE
-    )
-
-
-    transcripts = []
-
-
-    total_segments = (
-        len(audio)
-        + segment_samples
-        - 1
-    ) // segment_samples
-
-
-    # --------------------------------------------------------
-    # PROCESS EACH SEGMENT
-    # --------------------------------------------------------
-
-    for i, start in enumerate(
-        range(
-            0,
-            len(audio),
-            segment_samples,
-        )
-    ):
-
-        end = min(
-            start + segment_samples,
-            len(audio),
-        )
-
-
-        segment = audio[
-            start:end
-        ]
-
-
-        segment_duration = (
-            len(segment)
-            / SAMPLE_RATE
-        )
-
-
-        print()
-        print(
-            f"Segment "
-            f"{i + 1}/"
-            f"{total_segments}"
-        )
-
-        print(
-            f"{start / SAMPLE_RATE:.2f}s"
-            f" -> "
-            f"{end / SAMPLE_RATE:.2f}s"
-        )
-
-
-        # Ignore extremely short final segment
-        if segment_duration < 0.5:
-
-            print(
-                "Skip very short segment."
-            )
-
-            continue
-
-
-        text = transcribe_segment(
-            segment
-        )
-
-
-        print(
-            "Text:",
-            text
-        )
-
-
-        if text:
-
-            transcripts.append(
-                text
-            )
-
-
-    # --------------------------------------------------------
-    # MERGE
-    # --------------------------------------------------------
-
-    final_transcript = " ".join(
-        transcripts
-    )
-
-
-    print()
-    print("=" * 80)
-    print("FINAL TRANSCRIPT")
-    print("=" * 80)
-    print(final_transcript)
-
-
-    return final_transcript
+    return transcript.strip()
