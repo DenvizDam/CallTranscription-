@@ -1,23 +1,21 @@
 from transformers import pipeline
 
-from app.utils.logger import logger
-
 
 # ============================================================
-# MODEL PATH
+# CONFIG
 # ============================================================
 
 MODEL_PATH = "/home/dtphat/projects/PhoWhisper-base"
 
-# Nếu muốn test trực tiếp model chính thức từ Hugging Face:
+# Nếu muốn test checkpoint chính thức:
 # MODEL_PATH = "vinai/PhoWhisper-base"
 
 
 # ============================================================
-# LOAD PHOWHISPER MODEL
+# LOAD MODEL
 # ============================================================
 
-logger.info("Loading PhoWhisper Model...")
+print("Loading PhoWhisper...")
 
 asr_model = pipeline(
     task="automatic-speech-recognition",
@@ -26,56 +24,30 @@ asr_model = pipeline(
     stride_length_s=5,
 )
 
-logger.info("PhoWhisper Loaded")
+print("PhoWhisper loaded.")
+
+try:
+    print("Model:", asr_model.model.config._name_or_path)
+    print(
+        "Sampling rate:",
+        asr_model.feature_extractor.sampling_rate
+    )
+except Exception:
+    pass
 
 
 # ============================================================
-# TRANSCRIBE AUDIO
+# TRANSCRIBE
 # ============================================================
 
 def transcribe_audio(audio_path: str) -> str:
-    """
-    Transcribe Vietnamese audio using PhoWhisper.
 
-    Args:
-        audio_path (str):
-            Path to audio file.
-
-    Returns:
-        str:
-            Transcribed text.
-    """
-
-    logger.info(
-        f"Transcribing: {audio_path}"
+    result = asr_model(
+        audio_path,
+        generate_kwargs={
+            "language": "vi",
+            "task": "transcribe",
+        },
     )
 
-    try:
-
-        result = asr_model(
-            audio_path,
-            generate_kwargs={
-                "language": "vi",
-                "task": "transcribe",
-            },
-        )
-
-        transcript = result["text"].strip()
-
-        logger.info(
-            "Transcription Complete"
-        )
-
-        logger.info(
-            f"Transcript: {transcript}"
-        )
-
-        return transcript
-
-    except Exception as e:
-
-        logger.exception(
-            f"Transcription failed for {audio_path}: {e}"
-        )
-
-        raise
+    return result["text"].strip()
