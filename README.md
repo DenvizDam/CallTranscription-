@@ -1,5 +1,32 @@
-
-- Nghiên cứu và tổng hợp 16 model/API Speech-to-Text hỗ trợ tiếng Việt từ nguồn chính thức, phân chia theo nhóm.
-- Lập bảng so sánh tính năng, khả năng prompting, output, giới hạn và chi phí của từng ứng viên.
-- Hoàn thiện báo cáo HTML kèm matrix so sánh và shortlist ưu tiên thử nghiệm.
-- Hoàn thành phần Analysis & Survey; chưa thực hiện S2T Evaluation trên bộ audio thực tế.
+CallCSPro/
+│
+├── models/
+│   ├── phowhisper.py        # PhoWhisper
+│   ├── qwen3_asr.py         # Qwen3-ASR
+│   ├── zipformer.py         # Zipformer
+│   ├── fastconformer.py     # FastConformer
+│   └── whisper_large.py    # Whisper Large
+│
+├── configs/
+│   └── models.yaml          # Cấu hình từng model
+│
+├── preprocessing/
+│   ├── audio_loader.py
+│   ├── vad.py
+│   └── segmentation.py
+│
+├── evaluation/
+│   ├── normalization.py
+│   └── metrics.py
+│
+├── benchmark.py             # Chạy benchmark chung
+│
+├── datasets/
+│   └── benchmark/
+│       ├── audio/           # 80 audio
+│       └── ground_truth/    # 80 TXT
+│
+└── results/
+    ├── phowhisper/
+    ├── qwen3_asr/
+    └── zipformer/
