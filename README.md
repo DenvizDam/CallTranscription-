@@ -1,5 +1,8 @@
-cd /home/dtphat/projects
 
-git clone https://github.com/ggroup-ai-lab/gipformer.git
 
-cd gipformer
+
+gipformer:
+  checkpoint: "/home/dtphat/projects/Gipformer-1.5"
+  mode: "vad_segments"
+  segment_seconds: 20
+  provider: "cpu"
