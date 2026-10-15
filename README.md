@@ -1,3 +1,5 @@
-hf download g-group-ai-lab/gipformer1.5-68M-rnnt \
-  encoder.int8.onnx decoder.int8.onnx joiner.int8.onnx tokens.txt \
-  --local-dir /home/dtphat/projects/Gipformer-1.5
+- **Mở rộng đánh giá giải pháp Speech-to-Text:** Tích hợp và benchmark thêm các mô hình Zipformer-30M, Whisper Large và Gipformer 1.5 trên dữ liệu cuộc gọi thực tế.
+- **Tối ưu hiệu quả xử lý cuộc gọi:** Áp dụng VAD và Speech-aware Segmentation nhằm cải thiện độ chính xác nhận dạng và hiệu suất xử lý.
+- **Đánh giá hiệu quả các giải pháp:** So sánh 5 mô hình dựa trên độ chính xác (WER/CER), tốc độ xử lý (RTF) và khả năng vận hành.
+- **Xác định giải pháp tiềm năng:** Gipformer 1.5 dẫn đầu về độ chính xác với Average WER **21.91%**, xử lý thành công 80/80 cuộc gọi.
+- **Định hướng triển khai:** Tổng hợp kết quả làm cơ sở lựa chọn giải pháp Speech-to-Text phù hợp với nhu cầu nghiệp vụ Call Center, đồng thời xác định các hạng mục cần tiếp tục tối ưu và kiểm chứng.
