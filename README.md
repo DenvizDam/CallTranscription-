@@ -1,22 +1,34 @@
-# PROMPT – EXCEL STATISTICAL REPORT & ROOT CAUSE ANALYSIS
+# PROMPT – CREATE EXCEL STATISTICAL REPORT (TABLE & MATRIX ONLY)
 
-Hãy đóng vai một chuyên gia Data Analyst và Business Analyst, sử dụng dataset hiện có trong Excel để xây dựng báo cáo thống kê chuyên nghiệp, chính xác, trực quan, dễ hiểu và tập trung vào giá trị business.
+Hãy đóng vai một chuyên gia Data Analyst, Business Analyst và Excel Reporting Designer.
 
-## 1. Điều kiện lọc dữ liệu bắt buộc
+Sử dụng dataset hiện có trong workbook Excel để **tạo một worksheet mới có tên "Statistical Report"**, xây dựng báo cáo thống kê chuyên nghiệp, chính xác, dễ hiểu và hữu ích cho business.
 
-Trước khi thực hiện bất kỳ phép thống kê nào, phải lọc toàn bộ dataset theo điều kiện:
+Báo cáo phải được thiết kế hoàn chỉnh ngay trong Excel, có bố cục khoa học, cân đối, gọn gàng, dễ đọc và hỗ trợ tương tác.
+
+**CÁC YÊU CẦU BẮT BUỘC:**
+- Tạo worksheet mới tên "Statistical Report".
+- Chỉ sử dụng Table và Matrix, tuyệt đối không tạo Chart hoặc biểu đồ.
+- Không chỉnh sửa, xóa hoặc ghi đè dữ liệu ở bất kỳ worksheet nguồn nào.
+- Phân bổ tất cả các bảng trong một khu vực thống nhất, không rải rác.
+- Tối ưu chiều ngang báo cáo để hạn chế tối đa cuộn ngang.
+- Mỗi Table và Matrix phải có Title và Subtitle rõ ràng bằng tiếng Việt.
+
+## 1. Điều kiện lọc bắt buộc
+
+Trước khi thực hiện bất kỳ phép thống kê nào, lọc toàn bộ dataset theo điều kiện:
 
 **Label = "good"**
 
-Quy tắc:
-- Chỉ những dòng có Label chính xác bằng "good" mới được tham gia phân tích.
-- Loại bỏ khỏi phạm vi thống kê tất cả các dòng có Label khác "good" hoặc bị Blank.
-- Toàn bộ KPI, bảng thống kê, biểu đồ và kết luận phải dựa trên tập dữ liệu đã lọc.
-- Không chỉnh sửa hoặc xóa dữ liệu gốc.
+- Chỉ sử dụng những dòng có Label chính xác bằng "good".
+- Loại khỏi phạm vi thống kê tất cả các dòng có Label khác "good" hoặc Blank.
+- Toàn bộ Count, Percentage, Table, Matrix và Business Insights phải dựa trên tập dữ liệu đã lọc.
+- Không chỉnh sửa dữ liệu nguồn.
+- Cột Label chỉ dùng làm điều kiện lọc, không đưa vào bảng phân tích.
 
-## 2. Phạm vi các cột cần phân tích
+## 2. Phạm vi các cột cần thống kê
 
-Dataset gốc có nhiều cột, tuy nhiên báo cáo chỉ được phép sử dụng 5 cột:
+Dataset gốc có nhiều cột, tuy nhiên chỉ sử dụng 5 cột sau để phân tích:
 
 1. GT Detail
 2. Root Cause
@@ -24,152 +36,319 @@ Dataset gốc có nhiều cột, tuy nhiên báo cáo chỉ được phép sử 
 4. Detail False Entities
 5. Check
 
-Cột Label chỉ sử dụng để lọc dữ liệu, không đưa vào nội dung thống kê.
-
 Không sử dụng những cột khác để tính toán, phân loại hoặc đưa ra kết luận.
+
+Giữ nguyên tên trường để dễ đối chiếu với dữ liệu nguồn.
 
 ## 3. Cấu trúc phân tích
 
-Bốn cột chính được trình bày theo mức độ chi tiết tăng dần:
+Phân tích bốn cột chính theo mức độ chi tiết tăng dần:
 
 **GT Detail → Root Cause → False Entities → Detail False Entities**
 
-Trong đó:
 - GT Detail: Cấp độ tổng quan nhất.
 - Root Cause: Cấp độ phân tích nguyên nhân.
-- False Entities: Cấp độ phân loại entity sai.
-- Detail False Entities: Cấp độ mô tả lỗi cụ thể nhất.
+- False Entities: Cấp độ phân loại Entity sai.
+- Detail False Entities: Cấp độ mô tả lỗi chi tiết nhất.
 
-Cột Check được sử dụng làm chiều phân tích bổ sung để đối chiếu với các nhóm lỗi.
+Cột Check được sử dụng như một chiều phân tích bổ sung, không thuộc cấu trúc phân cấp chính.
 
-Không tự giả định quan hệ phân cấp tuyệt đối giữa các giá trị nếu dữ liệu không hỗ trợ.
+Không tự giả định quan hệ cha–con tuyệt đối nếu dữ liệu thực tế không chứng minh điều đó.
 
 ## 4. Quy tắc xử lý Blank
 
-**Bắt buộc không tính Blank vào bất kỳ phép thống kê liên quan nào.**
+**Không tính Blank vào bất kỳ phép thống kê liên quan nào.**
 
-- Khi thống kê riêng từng cột, chỉ tính các dòng có giá trị hợp lệ tại cột đó.
-- Khi thống kê kết hợp nhiều cột, chỉ tính những dòng có dữ liệu hợp lệ ở tất cả các cột đang tham gia phân tích.
-- Không xóa toàn bộ dòng chỉ vì một cột có giá trị Blank.
+- Khi thống kê từng cột, chỉ loại Blank tại cột đó.
+- Khi thống kê kết hợp nhiều cột, chỉ tính các dòng có dữ liệu hợp lệ ở tất cả các cột tham gia.
+- Không xóa toàn bộ bản ghi chỉ vì một cột bị Blank.
 - Không tính Blank vào mẫu số khi tính Percentage (%).
-- Không tự thay thế Blank bằng giá trị khác.
+- Không thay Blank bằng giá trị khác.
 - Xem ô trống, NULL, NaN và chuỗi chỉ chứa khoảng trắng là Blank.
-- Giữ nguyên dữ liệu trong worksheet gốc.
+- Không chỉnh sửa dữ liệu nguồn.
 
-## 5. Yêu cầu tạo báo cáo trong Excel
+## 5. Tạo worksheet báo cáo mới
 
-**BẮT BUỘC tạo một worksheet mới có tên "Statistical Report" để chứa toàn bộ báo cáo.**
+**BẮT BUỘC tạo một worksheet mới có tên "Statistical Report".**
 
-### A. Summary Statistics
+- Toàn bộ Table, Matrix, KPI và kết quả phân tích phải được đặt trên worksheet này.
+- Không tạo thêm các sheet phụ không cần thiết.
+- Không chỉnh sửa worksheet nguồn.
+- Không sao chép toàn bộ dataset gốc sang sheet báo cáo nếu không cần thiết.
+- Ưu tiên sử dụng Excel Table, PivotTable hoặc công thức để tham chiếu trực tiếp dữ liệu nguồn.
+- Báo cáo phải có khả năng cập nhật khi dữ liệu nguồn thay đổi nếu công cụ Excel hỗ trợ.
+- Nếu tên sheet đã tồn tại, không ghi đè; hãy thông báo thay vì tự ý xóa hoặc thay thế.
 
-Tạo phần tổng quan bao gồm:
-- Tổng số dòng thỏa mãn Label = "good".
-- Tổng số dòng hợp lệ của từng cột phân tích.
-- Số lượng nhóm phân loại khác nhau của từng cột.
-- Tổng quan phân bố các nhóm lỗi.
-- Top 5 nhóm xuất hiện nhiều nhất.
+## 6. Nội dung báo cáo và tiêu đề từng phần
 
-### B. Individual Column Statistics
+Tổ chức báo cáo thành 5 Section theo trình tự từ tổng quan đến chi tiết.
 
-Tạo bảng thống kê riêng cho từng cột:
-- GT Detail.
-- Root Cause.
-- False Entities.
-- Detail False Entities.
-- Check.
+### SECTION 01 – TỔNG QUAN DỮ LIỆU HỢP LỆ
 
-Mỗi bảng phải bao gồm:
+**Title: "01. Tổng quan dữ liệu sau khi lọc Label = good"**
 
-| Category | Count | Percentage (%) | Rank |
-|---|---|---|---|
+**Subtitle:** "Thống kê số lượng bản ghi hợp lệ và mức độ đầy đủ dữ liệu của các trường phân tích."
+
+Tạo bảng tổng quan gồm:
+- Tổng số bản ghi có Label = "good".
+- Số bản ghi hợp lệ của từng cột.
+- Số lượng nhóm giá trị khác nhau của từng cột.
+- Tỷ lệ dữ liệu hợp lệ trên tổng số bản ghi có Label = "good".
+
+Bảng tổng quan cần được bố trí ngay đầu sheet, ngắn gọn và dễ đọc.
+
+### SECTION 02 – THỐNG KÊ PHÂN BỐ TỪNG NHÓM
+
+Tạo 5 bảng thống kê riêng biệt.
+
+**Table 2.1 – "Phân bố các nhóm GT Detail"**
+
+Subtitle: "Số lượng và tỷ trọng của từng nhóm GT Detail trong dữ liệu hợp lệ."
+
+**Table 2.2 – "Phân bố các nguyên nhân lỗi (Root Cause)"**
+
+Subtitle: "Tần suất xuất hiện của từng nguyên nhân lỗi."
+
+**Table 2.3 – "Phân bố các loại Entity bị sai (False Entities)"**
+
+Subtitle: "Những loại Entity thường xuất hiện lỗi."
+
+**Table 2.4 – "Phân bố các lỗi Entity chi tiết (Detail False Entities)"**
+
+Subtitle: "Các dạng lỗi Entity cụ thể trong dữ liệu."
+
+**Table 2.5 – "Phân bố kết quả kiểm tra (Check)"**
+
+Subtitle: "Số lượng và tỷ trọng của từng giá trị trong cột Check."
+
+Mỗi bảng gồm:
+- Category
+- Count
+- Percentage (%)
+- Rank
 
 Yêu cầu:
-- Count: Số lần xuất hiện của từng giá trị.
-- Percentage: Count / Tổng số dòng hợp lệ của cột tương ứng.
-- Rank: Thứ hạng dựa trên Count giảm dần.
-- Loại bỏ Blank hoàn toàn khỏi từng bảng thống kê.
-- Sắp xếp theo Count từ cao xuống thấp.
+- Sắp xếp Count giảm dần.
+- Không hiển thị Blank.
+- Có dòng Total.
+- Tổng Count bằng tổng số bản ghi hợp lệ của cột.
+- Tổng Percentage bằng 100%, ngoại trừ sai lệch nhỏ do làm tròn.
 
-### C. Cross-Analysis
+### SECTION 03 – MATRIX PHÂN TÍCH MỐI LIÊN HỆ
 
-Tạo các bảng thống kê kết hợp:
+Tạo 6 Matrix:
 
-1. GT Detail × Root Cause.
-2. Root Cause × False Entities.
-3. False Entities × Detail False Entities.
-4. GT Detail × Root Cause × False Entities × Detail False Entities.
-5. Check × Root Cause.
-6. Check × False Entities.
-7. Check × Detail False Entities.
+**Matrix 3.1 – "Phân bố nguyên nhân lỗi theo từng nhóm GT Detail"**
+- Rows: GT Detail
+- Columns: Root Cause
+- Values: Count
 
-Với mỗi bảng:
-- Hiển thị số lượng bản ghi.
-- Tính tỷ trọng (%) trên tổng số bản ghi hợp lệ của phép phân tích đó.
-- Tính tỷ trọng trong nhóm cha khi phù hợp.
-- Loại bỏ các dòng có Blank ở bất kỳ cột nào tham gia phép thống kê.
-- Sắp xếp theo tần suất giảm dần.
+**Matrix 3.2 – "Phân bố các loại Entity sai theo nguyên nhân lỗi"**
+- Rows: Root Cause
+- Columns: False Entities
+- Values: Count
 
-### D. Visualization
+**Matrix 3.3 – "Phân bố lỗi Entity chi tiết theo từng loại Entity sai"**
+- Rows: False Entities
+- Columns: Detail False Entities
+- Values: Count
 
-Tạo các biểu đồ trực tiếp trong worksheet "Statistical Report":
+**Matrix 3.4 – "Phân bố kết quả Check theo nguyên nhân lỗi"**
+- Rows: Root Cause
+- Columns: Check
+- Values: Count
 
-- Bar Chart: Top Root Cause.
-- Bar Chart: Top False Entities.
-- Bar Chart: Top Detail False Entities.
-- Biểu đồ phân bố GT Detail.
-- Biểu đồ phân bố Check.
-- Treemap hoặc biểu đồ phù hợp để thể hiện cấu trúc phân cấp nếu được Excel hỗ trợ.
+**Matrix 3.5 – "Phân bố kết quả Check theo loại Entity sai"**
+- Rows: False Entities
+- Columns: Check
+- Values: Count
 
-Ưu tiên sử dụng PivotTable, PivotChart và Slicer nếu môi trường Excel hỗ trợ.
+**Matrix 3.6 – "Phân bố kết quả Check theo lỗi Entity chi tiết"**
+- Rows: Detail False Entities
+- Columns: Check
+- Values: Count
 
-### E. Business Insights
+Yêu cầu:
+- Chỉ tính dữ liệu hợp lệ ở những cột đang tham gia Matrix.
+- Loại Blank tại các cột đó.
+- Có Row Total, Column Total và Grand Total.
+- Sắp xếp theo tổng Count giảm dần nếu phù hợp.
+- Có Title và Subtitle riêng.
+- Sử dụng Conditional Formatting nhẹ để làm nổi bật các giá trị cao.
+- Nếu Matrix quá rộng, có thể dùng bảng tổng hợp dạng dài với Filter và Sort để thay thế, nhưng phải giữ nguyên ý nghĩa và đầy đủ dữ liệu thống kê.
 
-Dựa trên kết quả thống kê, đưa ra các nhận định:
+### SECTION 04 – THỐNG KÊ PHÂN CẤP CHI TIẾT
 
-- Root Cause nào xuất hiện nhiều nhất?
-- Loại False Entities nào thường xảy ra lỗi nhất?
-- Detail False Entities nào xuất hiện nhiều nhất?
-- Những nhóm GT Detail nào tập trung nhiều lỗi?
-- Mối liên hệ đáng chú ý giữa Root Cause và False Entities là gì?
-- Kết quả Check phân bố như thế nào giữa các nhóm?
-- Những nhóm lỗi nào cần được ưu tiên kiểm tra hoặc cải thiện?
+**Title: "04. Phân tích lỗi từ tổng quan đến chi tiết"**
 
-Mỗi nhận định phải có số liệu cụ thể làm căn cứ.
+**Subtitle:** "Thống kê các tổ hợp lỗi theo chuỗi GT Detail → Root Cause → False Entities → Detail False Entities."
 
-Không tự suy diễn nguyên nhân hoặc mức độ nghiêm trọng chỉ dựa trên tần suất.
+Tạo bảng gồm:
+- GT Detail
+- Root Cause
+- False Entities
+- Detail False Entities
+- Count
+- Percentage (%)
 
-## 6. Yêu cầu trình bày
+Quy tắc:
+- Mỗi dòng là một tổ hợp giá trị xuất hiện trong dataset.
+- Gộp các tổ hợp giống nhau.
+- Chỉ tính dòng có đủ dữ liệu hợp lệ của cả bốn cột.
+- Sắp xếp Count giảm dần.
+- Percentage tính trên tổng số bản ghi hợp lệ có đủ cả bốn cột.
+- Có Grand Total.
+- Cho phép Filter và Sort.
 
-Thiết kế worksheet "Statistical Report" theo phong cách báo cáo business chuyên nghiệp:
+### SECTION 05 – NHÓM LỖI XUẤT HIỆN NHIỀU NHẤT
 
-- Bố cục rõ ràng, từ tổng quan đến chi tiết.
-- Tiêu đề và các phần được phân chia hợp lý.
-- KPI được trình bày nổi bật.
-- Bảng thống kê dễ đọc, dễ so sánh.
-- Sử dụng màu sắc đồng bộ, chuyên nghiệp.
-- Định dạng Count là số nguyên.
-- Định dạng Percentage với 2 chữ số thập phân.
-- Sắp xếp các nhóm theo Count giảm dần.
-- Có thể sử dụng Conditional Formatting để làm nổi bật những nhóm có tần suất cao.
-- Không tạo dashboard HTML hoặc file ngoài Excel.
-- Ưu tiên công thức và bảng thống kê có thể cập nhật khi dữ liệu thay đổi.
+**Title: "05. Top 10 tổ hợp lỗi xuất hiện nhiều nhất"**
 
-## 7. Kiểm tra tính chính xác
+**Subtitle:** "Những tổ hợp lỗi có tần suất cao nhất trong dữ liệu phân cấp chi tiết."
 
-Sau khi hoàn thành, kiểm tra lại:
+Tạo bảng gồm:
+- Rank
+- GT Detail
+- Root Cause
+- False Entities
+- Detail False Entities
+- Count
+- Percentage (%)
 
-- Tất cả kết quả chỉ sử dụng các dòng có Label = "good".
-- Không có giá trị Blank được tính vào các bảng thống kê.
-- Tổng Count của bảng thống kê riêng từng cột bằng số dòng hợp lệ của cột tương ứng.
-- Tổng tỷ trọng các nhóm hợp lệ của từng bảng bằng 100%, ngoại trừ sai lệch do làm tròn.
-- Không sử dụng dữ liệu từ những cột ngoài phạm vi quy định.
-- Không tạo dữ liệu giả hoặc kết quả không có căn cứ.
-- Các biểu đồ phải khớp với bảng thống kê.
+Yêu cầu:
+- Chọn Top 10 dựa trên Count giảm dần.
+- Percentage sử dụng mẫu số từ Section 04.
+- Không tính Blank.
+- Có thể bổ sung nhận xét ngắn dựa trên số liệu.
+- Không tự đánh giá mức độ nghiêm trọng chỉ dựa trên tần suất.
 
-## 8. Quy định bắt buộc về worksheet
+## 7. Yêu cầu bố cục và phân bổ trên worksheet
 
-**Toàn bộ báo cáo phải được tạo trên một worksheet mới có tên "Statistical Report".**
+**ĐÂY LÀ YÊU CẦU ƯU TIÊN CAO.**
 
-- Không chỉnh sửa worksheet gốc.
-- Không xóa bất kỳ dữ liệu gốc nào.
-- Không ghi đè công thức hoặc giá trị trong các sheet hiện
+Toàn bộ báo cáo phải được phân bổ khoa học, tập trung, cân đối và vừa với không gian hiển thị của Excel.
+
+### 7.1. Tối ưu không gian
+
+- Không bố trí các Table và Matrix rải rác.
+- Không để những vùng trống quá lớn.
+- Không tạo quá nhiều cột hoặc hàng trống.
+- Ưu tiên chiều dọc thay vì trải rộng chiều ngang.
+- Hạn chế tối đa việc cuộn ngang.
+- Tự điều chỉnh Column Width và Row Height.
+- Sử dụng Wrap Text nếu nội dung dài.
+- Không để chữ bị cắt, tràn hoặc chồng lấn.
+- Không thu nhỏ font quá mức chỉ để ép nội dung vào một màn hình.
+- Ưu tiên mức Zoom khoảng 80–90% nếu phù hợp.
+
+### 7.2. Nguyên tắc bố trí bảng
+
+- Bảng nhỏ được đặt cạnh nhau khi vừa chiều ngang.
+- Bảng lớn nên được bố trí riêng.
+- Matrix nhiều cột phải được tối ưu để dễ đọc.
+- Những bảng liên quan nên đặt gần nhau.
+- Khoảng cách giữa các bảng khoảng 1–2 hàng hoặc cột trống khi phù hợp.
+- Tiêu đề phải nằm ngay phía trên bảng.
+- Không để bảng chồng lấn.
+- Không đặt bảng ở những cột quá xa khu vực báo cáo chính.
+
+### 7.3. Thứ tự trình bày
+
+1. Tổng quan dữ liệu.
+2. Phân bố từng nhóm.
+3. Matrix phân tích.
+4. Phân tích phân cấp chi tiết.
+5. Top 10 tổ hợp lỗi.
+
+Bố trí tất cả theo luồng đọc từ trên xuống dưới.
+
+Người đọc nên chủ yếu chỉ cần cuộn xuống để theo dõi báo cáo.
+
+### 7.4. Tối ưu hiển thị
+
+- Ưu tiên chiều ngang gọn và phù hợp màn hình máy tính thông thường.
+- Không cố gắng đưa toàn bộ báo cáo vào một màn hình.
+- Cho phép chiều dài worksheet linh hoạt.
+- Sử dụng Grouping nếu phù hợp để thu gọn những khu vực dài.
+- Đảm bảo các bảng luôn giữ được khả năng đọc và tương tác.
+
+## 8. Khả năng tương tác
+
+- Bật Filter và Sort cho các bảng chi tiết.
+- Cho phép sắp xếp theo Count, Percentage và Category.
+- Ưu tiên Excel Table hoặc PivotTable khi phù hợp.
+- Hỗ trợ Expand/Collapse nếu có cấu trúc phân cấp.
+- Có thể dùng Slicer nếu hỗ trợ và không làm rối bố cục.
+- Freeze Panes tại vị trí hợp lý.
+- Có thể tạo liên kết điều hướng đến từng Section.
+- Không dùng Merged Cells trong vùng dữ liệu cần Filter hoặc Sort.
+- Không tạo những chức năng lọc gây xung đột giữa các bảng.
+- Nếu dùng Slicer, đảm bảo kết nối với đúng bảng cần lọc.
+
+## 9. Yêu cầu thiết kế và tiêu đề
+
+Mỗi Table và Matrix bắt buộc có:
+- Title: Tên bảng rõ ràng, mô tả đúng nội dung.
+- Subtitle: Một câu ngắn giải thích ý nghĩa của bảng và phạm vi thống kê.
+
+Thiết kế:
+- Tiêu đề Section màu xanh navy hoặc xanh dương đậm.
+- Header bảng màu xanh nhạt hoặc xám nhạt.
+- Nền bảng màu trắng hoặc rất nhạt.
+- Sử dụng font dễ đọc, đồng bộ.
+- Có đường viền mảnh.
+- Header in đậm.
+- Total và Grand Total nổi bật.
+- Count là số nguyên.
+- Percentage có 2 chữ số thập phân.
+- Căn trái văn bản.
+- Căn phải số liệu.
+- Conditional Formatting nhẹ nếu phù hợp.
+- Không sử dụng Chart.
+
+## 10. Kiểm tra chất lượng
+
+Sau khi tạo xong worksheet, bắt buộc kiểm tra:
+
+**Về dữ liệu:**
+- Tất cả kết quả chỉ dựa trên Label = "good".
+- Không tính Blank.
+- Count và Percentage chính xác.
+- Tổng Count từng bảng khớp với dữ liệu hợp lệ.
+- Grand Total Matrix khớp với số dòng hợp lệ đồng thời của các cột tham gia.
+- Không sử dụng cột ngoài phạm vi.
+- Không thay đổi dữ liệu nguồn.
+
+**Về bố cục:**
+- Không có bảng chồng lấn.
+- Không có chữ bị cắt.
+- Không có bảng rải rác.
+- Không có khoảng trắng lớn không cần thiết.
+- Hạn chế tối đa cuộn ngang.
+- Title và Subtitle rõ ràng.
+- Bố cục đồng bộ và có tính thẩm mỹ.
+
+**Về tương tác:**
+- Filter và Sort hoạt động đúng.
+- PivotTable hoặc Table hoạt động chính xác.
+- Không có công thức bị lỗi.
+- Không có Chart.
+
+## 11. Mục tiêu cuối cùng
+
+Hãy thực sự tạo một worksheet mới có tên **"Statistical Report"** ngay trong workbook hiện tại.
+
+Kết quả cần đáp ứng:
+
+1. Báo cáo thống kê đầy đủ bằng Table và Matrix.
+2. Chỉ dựa trên 5 cột phân tích và điều kiện Label = "good".
+3. Loại bỏ Blank đúng cách trong từng phép tính.
+4. Có Title và Subtitle rõ ràng cho từng bảng.
+5. Bố cục cân đối, tập trung, không rải rác và hạn chế cuộn ngang.
+6. Có khả năng Filter, Sort và tương tác.
+7. Số liệu chính xác và dễ kiểm tra.
+8. Không thay đổi dữ liệu gốc.
+
+**ƯU TIÊN CAO NHẤT: Tính chính xác của số liệu, bố cục gọn gàng và vừa với khu vực hiển thị, tiêu đề dễ hiểu, khả năng tương tác và giá trị thực tế cho business.**
+
+Không chỉ tạo các bảng thống kê đơn thuần. Hãy tổ chức chúng thành một báo cáo Excel thống nhất, logic, chuyên nghiệp và dễ sử dụng.
