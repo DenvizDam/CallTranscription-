@@ -1,354 +1,156 @@
-# PROMPT – CREATE EXCEL STATISTICAL REPORT (TABLE & MATRIX ONLY)
 
-Hãy đóng vai một chuyên gia Data Analyst, Business Analyst và Excel Reporting Designer.
 
-Sử dụng dataset hiện có trong workbook Excel để **tạo một worksheet mới có tên "Statistical Report"**, xây dựng báo cáo thống kê chuyên nghiệp, chính xác, dễ hiểu và hữu ích cho business.
+Amount
+Tối ưu S2T Prompt nhằm tăng độ chính xác khi nhận dạng số tiền, nhấn mạnh việc giữ nguyên giá trị, phân biệt đơn vị nghìn/triệu/tỷ và hạn chế tự suy đoán. Kiểm chứng hiệu quả bằng A/B Test trên audio thực tế.
 
-Báo cáo phải được thiết kế hoàn chỉnh ngay trong Excel, có bố cục khoa học, cân đối, gọn gàng, dễ đọc và hỗ trợ tương tác.
+
+code 
+Tối ưu S2T Prompt để bảo toàn từng ký tự mã; kiểm tra Preprocess/VAD tại đoạn đọc mã và bổ sung bộ test nhận dạng mã chữ-số
 
-**CÁC YÊU CẦU BẮT BUỘC:**
-- Tạo worksheet mới tên "Statistical Report".
-- Chỉ sử dụng Table và Matrix, tuyệt đối không tạo Chart hoặc biểu đồ.
-- Không chỉnh sửa, xóa hoặc ghi đè dữ liệu ở bất kỳ worksheet nguồn nào.
-- Phân bổ tất cả các bảng trong một khu vực thống nhất, không rải rác.
-- Tối ưu chiều ngang báo cáo để hạn chế tối đa cuộn ngang.
-- Mỗi Table và Matrix phải có Title và Subtitle rõ ràng bằng tiếng Việt.
+name
+Tối ưu S2T Prompt nhận dạng tên riêng tiếng Việt, hạn chế tự suy đoán họ tên; kiểm tra audio theo giọng vùng miền và bổ sung bộ kiểm thử tên khách hàng.
 
-## 1. Điều kiện lọc bắt buộc
+1. Bảng tổng hợp Root Cause & Solution
+Loại thông tin	Những lỗi S2T thường gặp	Hướng giải pháp ưu tiên
+NAME	Sai dấu, nhầm họ tên, thiếu hoặc dư thành phần tên	Tối ưu prompt nhận dạng tên riêng tiếng Việt; kiểm tra audio và phát âm vùng miền
+PHRASE / WORD	Nhận dạng sai từ, cụm từ chuyên ngành, thiếu hoặc thêm từ	Bổ sung thuật ngữ bảo hiểm trong prompt; giảm suy đoán theo ngữ cảnh
+PHONENUMBER	Sai số, thiếu/dư số, mất số 0 đầu	Nhận dạng từng chữ số, giữ nguyên thứ tự và số 0 đầu
+PROPOSALNUMBER	Sai mã hồ sơ, nhầm chữ số hoặc chữ cái, thiếu ký tự	Hướng dẫn nhận dạng mã theo từng ký tự, không tự sửa theo mẫu
+TERM	Sai thời hạn, nhầm năm/tháng hoặc nhầm số	Kiểm tra đồng thời giá trị số và đơn vị thời gian
+2. Prompt cải thiện theo từng loại
+A. NAME – Tên khách hàng / nhân viên
+Ví dụ:
+- Ground Truth: Nguyễn Thị Minh Anh
+- Transcript AI: Nguyễn Thị Mỹ Anh
+Hướng cải thiện: Giúp S2T nhận dạng chính xác tên riêng, không tự thay bằng tên phổ biến hơn.
 
-Trước khi thực hiện bất kỳ phép thống kê nào, lọc toàn bộ dataset theo điều kiện:
+Khi nhận dạng họ tên người Việt Nam:
 
-**Label = "good"**
+- Bảo toàn đầy đủ họ, tên đệm và tên chính.
+- Ưu tiên âm thanh thực tế, không suy đoán tên dựa trên mức độ phổ biến.
+- Chú ý các âm và dấu thanh dễ nhầm trong tên riêng.
+- Không tự thêm hoặc bỏ thành phần họ tên.
+- Nếu người nói đánh vần hoặc nhắc lại tên,
+  sử dụng thông tin đó để nhận dạng chính xác hơn.
+- Không tự thay tên bằng tên khác chỉ vì
+  phù hợp hơn với ngữ cảnh.
 
-- Chỉ sử dụng những dòng có Label chính xác bằng "good".
-- Loại khỏi phạm vi thống kê tất cả các dòng có Label khác "good" hoặc Blank.
-- Toàn bộ Count, Percentage, Table, Matrix và Business Insights phải dựa trên tập dữ liệu đã lọc.
-- Không chỉnh sửa dữ liệu nguồn.
-- Cột Label chỉ dùng làm điều kiện lọc, không đưa vào bảng phân tích.
 
-## 2. Phạm vi các cột cần thống kê
 
-Dataset gốc có nhiều cột, tuy nhiên chỉ sử dụng 5 cột sau để phân tích:
+Solution để ghi vào RCA:
+Tối ưu S2T Prompt nhận dạng tên riêng tiếng Việt, hạn chế tự suy đoán họ tên; kiểm tra audio theo giọng vùng miền và bổ sung bộ kiểm thử tên khách hàng.
 
-1. GT Detail
-2. Root Cause
-3. False Entities
-4. Detail False Entities
-5. Check
+B. PHRASE / WORD – Từ và cụm từ
+Ví dụ:
+- Ground Truth: "Phí bảo hiểm định kỳ"
+- Transcript AI: "Phí bảo hiểm điện tử"
+Hướng cải thiện: Tăng khả năng nhận dạng các thuật ngữ đặc thù trong ngành bảo hiểm.
 
-Không sử dụng những cột khác để tính toán, phân loại hoặc đưa ra kết luận.
-
-Giữ nguyên tên trường để dễ đối chiếu với dữ liệu nguồn.
-
-## 3. Cấu trúc phân tích
-
-Phân tích bốn cột chính theo mức độ chi tiết tăng dần:
-
-**GT Detail → Root Cause → False Entities → Detail False Entities**
-
-- GT Detail: Cấp độ tổng quan nhất.
-- Root Cause: Cấp độ phân tích nguyên nhân.
-- False Entities: Cấp độ phân loại Entity sai.
-- Detail False Entities: Cấp độ mô tả lỗi chi tiết nhất.
-
-Cột Check được sử dụng như một chiều phân tích bổ sung, không thuộc cấu trúc phân cấp chính.
-
-Không tự giả định quan hệ cha–con tuyệt đối nếu dữ liệu thực tế không chứng minh điều đó.
-
-## 4. Quy tắc xử lý Blank
-
-**Không tính Blank vào bất kỳ phép thống kê liên quan nào.**
-
-- Khi thống kê từng cột, chỉ loại Blank tại cột đó.
-- Khi thống kê kết hợp nhiều cột, chỉ tính các dòng có dữ liệu hợp lệ ở tất cả các cột tham gia.
-- Không xóa toàn bộ bản ghi chỉ vì một cột bị Blank.
-- Không tính Blank vào mẫu số khi tính Percentage (%).
-- Không thay Blank bằng giá trị khác.
-- Xem ô trống, NULL, NaN và chuỗi chỉ chứa khoảng trắng là Blank.
-- Không chỉnh sửa dữ liệu nguồn.
-
-## 5. Tạo worksheet báo cáo mới
-
-**BẮT BUỘC tạo một worksheet mới có tên "Statistical Report".**
-
-- Toàn bộ Table, Matrix, KPI và kết quả phân tích phải được đặt trên worksheet này.
-- Không tạo thêm các sheet phụ không cần thiết.
-- Không chỉnh sửa worksheet nguồn.
-- Không sao chép toàn bộ dataset gốc sang sheet báo cáo nếu không cần thiết.
-- Ưu tiên sử dụng Excel Table, PivotTable hoặc công thức để tham chiếu trực tiếp dữ liệu nguồn.
-- Báo cáo phải có khả năng cập nhật khi dữ liệu nguồn thay đổi nếu công cụ Excel hỗ trợ.
-- Nếu tên sheet đã tồn tại, không ghi đè; hãy thông báo thay vì tự ý xóa hoặc thay thế.
-
-## 6. Nội dung báo cáo và tiêu đề từng phần
-
-Tổ chức báo cáo thành 5 Section theo trình tự từ tổng quan đến chi tiết.
-
-### SECTION 01 – TỔNG QUAN DỮ LIỆU HỢP LỆ
-
-**Title: "01. Tổng quan dữ liệu sau khi lọc Label = good"**
-
-**Subtitle:** "Thống kê số lượng bản ghi hợp lệ và mức độ đầy đủ dữ liệu của các trường phân tích."
-
-Tạo bảng tổng quan gồm:
-- Tổng số bản ghi có Label = "good".
-- Số bản ghi hợp lệ của từng cột.
-- Số lượng nhóm giá trị khác nhau của từng cột.
-- Tỷ lệ dữ liệu hợp lệ trên tổng số bản ghi có Label = "good".
-
-Bảng tổng quan cần được bố trí ngay đầu sheet, ngắn gọn và dễ đọc.
-
-### SECTION 02 – THỐNG KÊ PHÂN BỐ TỪNG NHÓM
-
-Tạo 5 bảng thống kê riêng biệt.
-
-**Table 2.1 – "Phân bố các nhóm GT Detail"**
-
-Subtitle: "Số lượng và tỷ trọng của từng nhóm GT Detail trong dữ liệu hợp lệ."
-
-**Table 2.2 – "Phân bố các nguyên nhân lỗi (Root Cause)"**
-
-Subtitle: "Tần suất xuất hiện của từng nguyên nhân lỗi."
-
-**Table 2.3 – "Phân bố các loại Entity bị sai (False Entities)"**
-
-Subtitle: "Những loại Entity thường xuất hiện lỗi."
-
-**Table 2.4 – "Phân bố các lỗi Entity chi tiết (Detail False Entities)"**
-
-Subtitle: "Các dạng lỗi Entity cụ thể trong dữ liệu."
-
-**Table 2.5 – "Phân bố kết quả kiểm tra (Check)"**
-
-Subtitle: "Số lượng và tỷ trọng của từng giá trị trong cột Check."
-
-Mỗi bảng gồm:
-- Category
-- Count
-- Percentage (%)
-- Rank
-
-Yêu cầu:
-- Sắp xếp Count giảm dần.
-- Không hiển thị Blank.
-- Có dòng Total.
-- Tổng Count bằng tổng số bản ghi hợp lệ của cột.
-- Tổng Percentage bằng 100%, ngoại trừ sai lệch nhỏ do làm tròn.
-
-### SECTION 03 – MATRIX PHÂN TÍCH MỐI LIÊN HỆ
-
-Tạo 6 Matrix:
-
-**Matrix 3.1 – "Phân bố nguyên nhân lỗi theo từng nhóm GT Detail"**
-- Rows: GT Detail
-- Columns: Root Cause
-- Values: Count
-
-**Matrix 3.2 – "Phân bố các loại Entity sai theo nguyên nhân lỗi"**
-- Rows: Root Cause
-- Columns: False Entities
-- Values: Count
-
-**Matrix 3.3 – "Phân bố lỗi Entity chi tiết theo từng loại Entity sai"**
-- Rows: False Entities
-- Columns: Detail False Entities
-- Values: Count
-
-**Matrix 3.4 – "Phân bố kết quả Check theo nguyên nhân lỗi"**
-- Rows: Root Cause
-- Columns: Check
-- Values: Count
-
-**Matrix 3.5 – "Phân bố kết quả Check theo loại Entity sai"**
-- Rows: False Entities
-- Columns: Check
-- Values: Count
-
-**Matrix 3.6 – "Phân bố kết quả Check theo lỗi Entity chi tiết"**
-- Rows: Detail False Entities
-- Columns: Check
-- Values: Count
-
-Yêu cầu:
-- Chỉ tính dữ liệu hợp lệ ở những cột đang tham gia Matrix.
-- Loại Blank tại các cột đó.
-- Có Row Total, Column Total và Grand Total.
-- Sắp xếp theo tổng Count giảm dần nếu phù hợp.
-- Có Title và Subtitle riêng.
-- Sử dụng Conditional Formatting nhẹ để làm nổi bật các giá trị cao.
-- Nếu Matrix quá rộng, có thể dùng bảng tổng hợp dạng dài với Filter và Sort để thay thế, nhưng phải giữ nguyên ý nghĩa và đầy đủ dữ liệu thống kê.
-
-### SECTION 04 – THỐNG KÊ PHÂN CẤP CHI TIẾT
-
-**Title: "04. Phân tích lỗi từ tổng quan đến chi tiết"**
-
-**Subtitle:** "Thống kê các tổ hợp lỗi theo chuỗi GT Detail → Root Cause → False Entities → Detail False Entities."
-
-Tạo bảng gồm:
-- GT Detail
-- Root Cause
-- False Entities
-- Detail False Entities
-- Count
-- Percentage (%)
-
-Quy tắc:
-- Mỗi dòng là một tổ hợp giá trị xuất hiện trong dataset.
-- Gộp các tổ hợp giống nhau.
-- Chỉ tính dòng có đủ dữ liệu hợp lệ của cả bốn cột.
-- Sắp xếp Count giảm dần.
-- Percentage tính trên tổng số bản ghi hợp lệ có đủ cả bốn cột.
-- Có Grand Total.
-- Cho phép Filter và Sort.
-
-### SECTION 05 – NHÓM LỖI XUẤT HIỆN NHIỀU NHẤT
-
-**Title: "05. Top 10 tổ hợp lỗi xuất hiện nhiều nhất"**
-
-**Subtitle:** "Những tổ hợp lỗi có tần suất cao nhất trong dữ liệu phân cấp chi tiết."
-
-Tạo bảng gồm:
-- Rank
-- GT Detail
-- Root Cause
-- False Entities
-- Detail False Entities
-- Count
-- Percentage (%)
-
-Yêu cầu:
-- Chọn Top 10 dựa trên Count giảm dần.
-- Percentage sử dụng mẫu số từ Section 04.
-- Không tính Blank.
-- Có thể bổ sung nhận xét ngắn dựa trên số liệu.
-- Không tự đánh giá mức độ nghiêm trọng chỉ dựa trên tần suất.
-
-## 7. Yêu cầu bố cục và phân bổ trên worksheet
-
-**ĐÂY LÀ YÊU CẦU ƯU TIÊN CAO.**
-
-Toàn bộ báo cáo phải được phân bổ khoa học, tập trung, cân đối và vừa với không gian hiển thị của Excel.
-
-### 7.1. Tối ưu không gian
-
-- Không bố trí các Table và Matrix rải rác.
-- Không để những vùng trống quá lớn.
-- Không tạo quá nhiều cột hoặc hàng trống.
-- Ưu tiên chiều dọc thay vì trải rộng chiều ngang.
-- Hạn chế tối đa việc cuộn ngang.
-- Tự điều chỉnh Column Width và Row Height.
-- Sử dụng Wrap Text nếu nội dung dài.
-- Không để chữ bị cắt, tràn hoặc chồng lấn.
-- Không thu nhỏ font quá mức chỉ để ép nội dung vào một màn hình.
-- Ưu tiên mức Zoom khoảng 80–90% nếu phù hợp.
-
-### 7.2. Nguyên tắc bố trí bảng
-
-- Bảng nhỏ được đặt cạnh nhau khi vừa chiều ngang.
-- Bảng lớn nên được bố trí riêng.
-- Matrix nhiều cột phải được tối ưu để dễ đọc.
-- Những bảng liên quan nên đặt gần nhau.
-- Khoảng cách giữa các bảng khoảng 1–2 hàng hoặc cột trống khi phù hợp.
-- Tiêu đề phải nằm ngay phía trên bảng.
-- Không để bảng chồng lấn.
-- Không đặt bảng ở những cột quá xa khu vực báo cáo chính.
-
-### 7.3. Thứ tự trình bày
-
-1. Tổng quan dữ liệu.
-2. Phân bố từng nhóm.
-3. Matrix phân tích.
-4. Phân tích phân cấp chi tiết.
-5. Top 10 tổ hợp lỗi.
-
-Bố trí tất cả theo luồng đọc từ trên xuống dưới.
-
-Người đọc nên chủ yếu chỉ cần cuộn xuống để theo dõi báo cáo.
-
-### 7.4. Tối ưu hiển thị
-
-- Ưu tiên chiều ngang gọn và phù hợp màn hình máy tính thông thường.
-- Không cố gắng đưa toàn bộ báo cáo vào một màn hình.
-- Cho phép chiều dài worksheet linh hoạt.
-- Sử dụng Grouping nếu phù hợp để thu gọn những khu vực dài.
-- Đảm bảo các bảng luôn giữ được khả năng đọc và tương tác.
-
-## 8. Khả năng tương tác
-
-- Bật Filter và Sort cho các bảng chi tiết.
-- Cho phép sắp xếp theo Count, Percentage và Category.
-- Ưu tiên Excel Table hoặc PivotTable khi phù hợp.
-- Hỗ trợ Expand/Collapse nếu có cấu trúc phân cấp.
-- Có thể dùng Slicer nếu hỗ trợ và không làm rối bố cục.
-- Freeze Panes tại vị trí hợp lý.
-- Có thể tạo liên kết điều hướng đến từng Section.
-- Không dùng Merged Cells trong vùng dữ liệu cần Filter hoặc Sort.
-- Không tạo những chức năng lọc gây xung đột giữa các bảng.
-- Nếu dùng Slicer, đảm bảo kết nối với đúng bảng cần lọc.
-
-## 9. Yêu cầu thiết kế và tiêu đề
-
-Mỗi Table và Matrix bắt buộc có:
-- Title: Tên bảng rõ ràng, mô tả đúng nội dung.
-- Subtitle: Một câu ngắn giải thích ý nghĩa của bảng và phạm vi thống kê.
-
-Thiết kế:
-- Tiêu đề Section màu xanh navy hoặc xanh dương đậm.
-- Header bảng màu xanh nhạt hoặc xám nhạt.
-- Nền bảng màu trắng hoặc rất nhạt.
-- Sử dụng font dễ đọc, đồng bộ.
-- Có đường viền mảnh.
-- Header in đậm.
-- Total và Grand Total nổi bật.
-- Count là số nguyên.
-- Percentage có 2 chữ số thập phân.
-- Căn trái văn bản.
-- Căn phải số liệu.
-- Conditional Formatting nhẹ nếu phù hợp.
-- Không sử dụng Chart.
-
-## 10. Kiểm tra chất lượng
-
-Sau khi tạo xong worksheet, bắt buộc kiểm tra:
-
-**Về dữ liệu:**
-- Tất cả kết quả chỉ dựa trên Label = "good".
-- Không tính Blank.
-- Count và Percentage chính xác.
-- Tổng Count từng bảng khớp với dữ liệu hợp lệ.
-- Grand Total Matrix khớp với số dòng hợp lệ đồng thời của các cột tham gia.
-- Không sử dụng cột ngoài phạm vi.
-- Không thay đổi dữ liệu nguồn.
-
-**Về bố cục:**
-- Không có bảng chồng lấn.
-- Không có chữ bị cắt.
-- Không có bảng rải rác.
-- Không có khoảng trắng lớn không cần thiết.
-- Hạn chế tối đa cuộn ngang.
-- Title và Subtitle rõ ràng.
-- Bố cục đồng bộ và có tính thẩm mỹ.
-
-**Về tương tác:**
-- Filter và Sort hoạt động đúng.
-- PivotTable hoặc Table hoạt động chính xác.
-- Không có công thức bị lỗi.
-- Không có Chart.
-
-## 11. Mục tiêu cuối cùng
-
-Hãy thực sự tạo một worksheet mới có tên **"Statistical Report"** ngay trong workbook hiện tại.
-
-Kết quả cần đáp ứng:
-
-1. Báo cáo thống kê đầy đủ bằng Table và Matrix.
-2. Chỉ dựa trên 5 cột phân tích và điều kiện Label = "good".
-3. Loại bỏ Blank đúng cách trong từng phép tính.
-4. Có Title và Subtitle rõ ràng cho từng bảng.
-5. Bố cục cân đối, tập trung, không rải rác và hạn chế cuộn ngang.
-6. Có khả năng Filter, Sort và tương tác.
-7. Số liệu chính xác và dễ kiểm tra.
-8. Không thay đổi dữ liệu gốc.
-
-**ƯU TIÊN CAO NHẤT: Tính chính xác của số liệu, bố cục gọn gàng và vừa với khu vực hiển thị, tiêu đề dễ hiểu, khả năng tương tác và giá trị thực tế cho business.**
-
-Không chỉ tạo các bảng thống kê đơn thuần. Hãy tổ chức chúng thành một báo cáo Excel thống nhất, logic, chuyên nghiệp và dễ sử dụng.
+Khi chuyển giọng nói thành văn bản:
+
+- Nhận dạng chính xác các từ và cụm từ chuyên ngành bảo hiểm.
+- Chú ý những cụm từ như:
+  phí bảo hiểm, thời hạn đóng phí,
+  số tiền bảo hiểm, hợp đồng bảo hiểm,
+  quyền lợi bảo hiểm, hồ sơ yêu cầu bảo hiểm.
+- Không tự thay thế cụm từ nghe được bằng
+  thuật ngữ khác chỉ vì phổ biến hơn.
+- Không tự bổ sung từ hoặc hoàn thiện câu
+  nếu nội dung không xuất hiện trong audio.
+- Giữ nguyên ý nghĩa và nội dung lời nói.
+
+
+
+Solution để ghi vào RCA:
+Bổ sung và chuẩn hóa bộ thuật ngữ bảo hiểm trong S2T Prompt; kiểm thử các cặp từ dễ nhầm, hạn chế hiện tượng thay thế, thêm hoặc bỏ từ.
+
+C. PHONENUMBER – Số điện thoại
+Ví dụ:
+- Ground Truth: 0901234567
+- Transcript AI: 0911234567
+Hướng cải thiện: Đảm bảo từng chữ số được nhận dạng chính xác.
+
+Khi audio chứa số điện thoại:
+
+- Nhận dạng chính xác từng chữ số từ 0 đến 9.
+- Giữ nguyên thứ tự và số lượng chữ số.
+- Bắt buộc giữ các số 0 ở đầu.
+- Không tự thêm, bỏ hoặc thay thế chữ số.
+- Không tự sửa số điện thoại dựa trên đầu số nhà mạng.
+- Khi người nói đọc theo từng nhóm,
+  phải bảo toàn đầy đủ các nhóm số.
+- Chỉ ghép thành một dãy số khi có đủ
+  căn cứ từ nội dung audio.
+
+
+
+Solution để ghi vào RCA:
+Tối ưu prompt nhận dạng chuỗi số liên tiếp, bảo toàn số 0 đầu và thứ tự chữ số; kiểm tra VAD tại các khoảng ngắt khi đọc số điện thoại và bổ sung kiểm tra độ dài đầu ra.
+
+D. PROPOSALNUMBER – Mã hồ sơ yêu cầu bảo hiểm
+Ví dụ:
+- Ground Truth: 0012345678
+- Transcript AI: 012345678
+Hướng cải thiện: Tập trung vào khả năng nhận dạng chính xác chuỗi mã định danh dài.
+
+Khi nhận dạng mã hồ sơ yêu cầu bảo hiểm:
+
+- Nhận dạng theo từng ký tự thực sự nghe được.
+- Giữ chính xác thứ tự và số lượng ký tự.
+- Không bỏ các số 0 đứng đầu mã.
+- Không tự thêm hoặc loại bỏ ký tự.
+- Không tự suy đoán mã theo cấu trúc thường gặp.
+- Phân biệt các chữ số hoặc chữ cái
+  có cách phát âm gần giống.
+- Nếu mã được đọc thành nhiều nhóm,
+  phải giữ đầy đủ các nhóm ký tự.
+
+
+
+Solution để ghi vào RCA:
+Tối ưu S2T Prompt nhận dạng chuỗi mã hồ sơ, tập trung bảo toàn từng ký tự và số 0 đầu; kiểm tra VAD khi mã được đọc ngắt quãng và xây dựng bộ test mã dài.
+
+E. TERM – Thời hạn bảo hiểm / thời hạn đóng phí
+Ví dụ:
+- Ground Truth: 15 năm
+- Transcript AI: 50 năm
+Hoặc:
+- Ground Truth: 12 tháng
+- Transcript AI: 12 năm
+Hướng cải thiện: Nhận dạng chính xác cả giá trị số và đơn vị thời gian.
+
+Khi nhận dạng thông tin thời hạn:
+
+- Nhận dạng chính xác giá trị số được nói.
+- Phân biệt các đơn vị ngày, tháng và năm.
+- Không tự chuyển đổi đơn vị thời gian.
+- Không tự suy đoán thời hạn dựa trên
+  sản phẩm hoặc quy tắc bảo hiểm.
+- Phân biệt thời hạn bảo hiểm và
+  thời hạn đóng phí khi nghe được trong audio.
+- Không tự thay giá trị bằng một thời hạn
+  được cho là hợp lý hơn.
+
+
+
+Solution để ghi vào RCA:
+Tối ưu S2T Prompt nhận dạng số và đơn vị thời gian; kiểm thử các trường hợp nhầm năm/tháng, nhầm giá trị thời hạn và kiểm tra chất lượng audio tại đoạn chứa thông tin thời hạn.
+
+
+3. Bảng chuẩn hóa để đưa vào hệ thống RCA
+Đây là bảng tôi đề xuất bạn sử dụng khi điền các cột GT Detail, Group Cause, False Entities, Detail False Entities, Rootcause và Solution.
+GT Detail	Group Cause	False Entities	Detail False Entities	Rootcause	Solution
+S2T	NAME RECOGNITION ERROR	NAME	VALUE	Nhận dạng sai họ hoặc tên	Tối ưu prompt tên riêng, đánh giá giọng vùng miền
+S2T	WORD RECOGNITION ERROR	PHRASE/WORD	VALUE	Nhận dạng sai thuật ngữ bảo hiểm	Bổ sung thuật ngữ và test case chuyên ngành
+S2T	NUMBER RECOGNITION ERROR	PHONENUMBER	VALUE	Sai hoặc thiếu chữ số điện thoại	Tối ưu nhận dạng từng số, bảo toàn số 0 đầu
+S2T	CODE RECOGNITION ERROR	PROPOSALNUMBER	VALUE	Nhận dạng sai ký tự trong mã hồ sơ	Tối ưu prompt mã định danh, kiểm tra VAD
+S2T	TERM RECOGNITION ERROR	TERM	VALUE	Nhầm giá trị hoặc đơn vị thời hạn	Tối ưu nhận dạng số và đơn vị thời gian
+4. Nên ưu tiên giải pháp nào?
+Tôi đề xuất sử dụng cùng một quy trình cho tất cả các loại lỗi:
+1. Kiểm tra audio gốc và đoạn sau VAD để xác định có bị mất âm hay không.
+2. Tối ưu S2T Prompt theo từng loại thông tin, không thêm tất cả hướng dẫn quá dài vào một prompt ngay từ đầu.
+3. A/B Test prompt mới với prompt hiện tại trên cùng các audio lỗi.
+4. Đánh giá lại theo từng loại: NAME, PHRASE/WORD, PHONENUMBER, PROPOSALNUMBER và TERM.
+5. Nếu prompt không cải thiện, tiếp tục xem xét khả năng của model, phân đoạn audio và fine-tuning.
+Một lưu ý: Prompt không đảm bảo sửa được lỗi nghe nhầm từ audio. Với tên riêng, mã và số điện thoại, chất lượng tín hiệu, việc phân đoạn và năng lực mô hình thường quan trọng không kém prompt.
+Theo tôi, bạn nên xây dựng một S2T Prompt tổng thể có các quy tắc nhận dạng thông tin quan trọng, sau đó A/B Test từng nhóm hướng dẫn. Như vậy dễ đo được thay đổi nào thực sự có tác dụng và tránh prompt trở nên quá dài, gây ảnh hưởng đến các nội dung khác.
