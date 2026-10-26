@@ -1,109 +1,123 @@
-# FULL PROMPT – EXCEL HIERARCHICAL ERROR ANALYSIS & TREE DIAGRAM
+# FULL PROMPT – EXCEL HIERARCHICAL ERROR ANALYSIS & AUTOMATIC TREE DIAGRAM
 
 ## 1. VAI TRÒ VÀ MỤC TIÊU
 
-Hãy đóng vai chuyên gia Data Analyst, Business Analyst và Excel Automation Developer.
+Hãy đóng vai một chuyên gia Data Analyst, Business Analyst và Excel Automation Developer.
 
-Sử dụng dataset hiện có trong workbook Excel đang mở để xây dựng một báo cáo phân tích lỗi Speech-to-Text (S2T) và Named Entity Recognition (NER).
+Sử dụng dữ liệu trong sheet **`DB Records`** của workbook Excel hiện tại để xây dựng báo cáo phân tích lỗi Speech-to-Text (S2T) và Named Entity Recognition (NER).
 
 **MỤC TIÊU CHÍNH:**
 
-Tạo một sheet thống kê mới, tính toán toàn bộ số liệu từ cấp tổng quan rộng nhất đến cấp chi tiết nhất, sau đó tự động vẽ một Tree Diagram thể hiện đầy đủ các nhánh phân cấp.
+Tạo duy nhất một sheet thống kê mới có tên:
 
-Cấu trúc phân tích:
+`Hierarchical_Statistics`
 
-TOTAL RECORDS
-→ GT DETAIL
-→ GROUP CAUSE
-→ FALSE ENTITY
-→ DETAIL FALSE ENTITY
-→ ROOT CAUSE
-→ SOLUTION
+Sheet này phải bao gồm:
 
-Kết quả phải giúp trả lời:
+1. Overall Summary – Tổng quan dữ liệu.
+2. Full Hierarchical Statistics – Thống kê đầy đủ mọi cấp phân loại.
+3. Automatic Tree Diagram – Sơ đồ cây thể hiện tất cả nhánh thực tế.
+4. Data Validation – Kiểm tra độ chính xác và đầy đủ của số liệu.
 
-1. Tổng cộng có bao nhiêu record lỗi?
-2. S2T và NER có bao nhiêu lỗi?
-3. Mỗi Group Cause chiếm bao nhiêu lỗi?
-4. Trong từng Group Cause, False Entity nào xuất hiện nhiều nhất?
-5. Mỗi False Entity sai Value, Format hoặc giá trị khác bao nhiêu lần?
-6. Root Cause cụ thể của từng nhóm lỗi là gì?
-7. Các Root Cause dẫn đến những Solution nào?
-8. Mỗi nhánh chiếm bao nhiêu phần trăm cấp cha và tổng dataset?
-9. Nhánh nào có số lượng lỗi lớn nhất?
+Thống kê theo đúng cấu trúc:
 
-**YÊU CẦU QUAN TRỌNG:**
+**TOTAL RECORDS → GT DETAIL → GROUP CAUSE → FALSE ENTITY → DETAIL FALSE ENTITY → ROOT CAUSE → SOLUTION**
 
-- Chỉ tạo 1 sheet thống kê mới.
-- Không tạo workbook mới.
-- Không thay đổi dữ liệu gốc.
-- Không tạo dữ liệu giả hoặc mô phỏng.
-- Không giới hạn các giá trị theo danh sách cố định.
-- Không bỏ sót bất kỳ nhánh thực tế nào.
-- Sử dụng Tree Diagram bằng Excel Shapes và Connectors.
-- Không tạo Sunburst Chart, Treemap hoặc Dashboard HTML.
+Mỗi cấp phải cung cấp:
+
+- Count – Số lượng record.
+- Parent Count – Tổng số record thuộc node cha.
+- % of Parent – Tỷ lệ so với node cha.
+- % of Total – Tỷ lệ so với tổng dữ liệu.
+- Rank in Parent – Thứ hạng trong cùng node cha.
+- Node ID và Parent ID – Quan hệ phân cấp.
+
+**YÊU CẦU BẮT BUỘC:**
+
+- Chỉ tạo một sheet mới trong workbook hiện tại.
+- Không tạo workbook hoặc file Excel mới.
+- Không sửa, xóa hoặc ghi đè dữ liệu nguồn.
+- Không sử dụng dữ liệu mô phỏng.
+- Không giới hạn các giá trị hoặc tổ hợp phân loại.
+- Chỉ sử dụng dữ liệu thực tế.
+- Vẽ Tree Diagram bằng Excel Shapes và Connectors.
+- Không sử dụng Sunburst, Treemap hoặc các chart khác.
 
 ---
 
-## 2. ĐIỀU KIỆN LỌC DỮ LIỆU
+## 2. DATA SOURCE – SHEET NGUỒN
 
-Trước khi thực hiện bất kỳ phép thống kê nào, bắt buộc lọc dataset theo:
+**SOURCE SHEET: `DB Records`**
+
+Bắt buộc sử dụng sheet có tên chính xác:
+
+`DB Records`
+
+Quy định:
+
+1. Chỉ sử dụng dữ liệu từ `DB Records`.
+2. Không tự tìm hoặc sử dụng sheet khác làm nguồn.
+3. Không chỉnh sửa bất kỳ ô nào trong sheet nguồn.
+4. Không xóa, ghi đè, thay đổi cấu trúc hoặc format dữ liệu nguồn.
+5. Không xóa duplicate nếu chưa có quy tắc xác định duplicate.
+6. Mỗi dòng dữ liệu hợp lệ được tính là một record.
+7. Chỉ sử dụng vùng dữ liệu thực tế có header hợp lệ; không tính các dòng trống hoặc dòng tổng hợp ngoài dataset.
+8. Nếu không tìm thấy sheet `DB Records`, phải báo lỗi rõ ràng, không tự chọn sheet thay thế.
+
+### ĐIỀU KIỆN LỌC BẮT BUỘC
+
+Trước khi thống kê, lọc theo:
 
 **Label = "good"**
 
-Quy tắc:
+Yêu cầu:
 
-1. Chỉ lấy những dòng có Label chính xác bằng `"good"`.
-2. Phân biệt chữ hoa, chữ thường và khoảng trắng.
-3. Loại khỏi tập thống kê mọi dòng có Label khác `"good"` hoặc Blank.
-4. Không xóa các dòng bị loại trong dữ liệu nguồn.
-5. Không chỉnh sửa giá trị Label.
-6. Không tự xóa duplicate.
-7. Toàn bộ Count và Percentage phải được tính trên tập dữ liệu sau khi lọc.
-8. Nếu một dòng biểu diễn một error record thì mỗi dòng đó được đếm một lần ở mỗi cấp phân loại tương ứng.
+- Chỉ chọn giá trị chính xác bằng `"good"`.
+- Phân biệt chữ hoa/chữ thường.
+- Phân biệt khoảng trắng đầu/cuối.
+- Không lấy `"Good"`, `"GOOD"`, `" good"` hoặc `"good "`.
+- Không đưa các dòng Label khác `"good"` hoặc Blank vào thống kê.
+- Không chỉnh sửa giá trị Label trong dữ liệu nguồn.
+- Việc đếm phải áp dụng trên toàn bộ dataset nguồn thỏa điều kiện, không chỉ các dòng đang hiển thị do filter thủ công.
 
-Nếu có Case ID hoặc Call ID, không tự động sử dụng DISTINCT COUNT để thay thế số dòng lỗi.
-
-Có thể bổ sung Distinct Case Count như một chỉ số riêng nếu dữ liệu hỗ trợ.
+Tất cả Count và Percentage phải dựa trên tập dữ liệu sau khi lọc.
 
 ---
 
-## 3. XÁC ĐỊNH CÁC CỘT PHÂN TÍCH
+## 3. CÁC CỘT CẦN PHÂN TÍCH
 
-Tìm trong dataset nguồn các cột sau:
+Đọc các cột từ sheet `DB Records`:
 
-1. Label
-2. GT Detail
-3. Group Cause
-4. False Entity
-5. Detail False Entity
-6. Root Cause
-7. Solution hoặc Giải pháp
+1. `Label`
+2. `GT Detail`
+3. `Group Cause`
+4. `False Entity`
+5. `Detail False Entity`
+6. `Root Cause`
+7. `Solution` hoặc cột `Giải pháp` tương ứng.
 
-Phải sử dụng đúng dữ liệu thực tế của từng cột.
+Phải nhận diện đúng tên header thực tế.
 
-Nếu tên cột có sự khác biệt nhỏ, chỉ tự động mapping khi xác định được chính xác cột tương ứng.
+Nếu tên cột Solution có khác biệt, chỉ mapping khi xác định được chính xác.
 
-Không tự suy diễn mapping khi có nhiều cột cùng khả năng phù hợp.
+Nếu không tồn tại cột Solution:
 
-Nếu không tồn tại cột Solution hoặc Giải pháp:
+- Không tự tạo giá trị Solution.
+- Thống kê và vẽ Tree Diagram đến Root Cause.
+- Ghi rõ Solution không tồn tại trong dữ liệu nguồn.
+- Không làm gián đoạn việc thống kê các cấp còn lại.
 
-- Thống kê đến Root Cause.
-- Tree Diagram kết thúc ở Root Cause.
-- Ghi rõ rằng dataset chưa có cột Solution.
-- Không tự tạo hoặc điền giải pháp dựa trên giả định.
+Các cột phân loại không được tự sửa hoặc chuẩn hóa giá trị.
 
 ---
 
-## 4. CẤU TRÚC PHÂN CẤP CHI TIẾT
-
-Thực hiện thống kê theo đúng thứ tự.
+## 4. CẤU TRÚC HIERARCHY
 
 ### LEVEL 0 – TOTAL RECORDS
 
-Tổng số dòng sau khi filter Label = "good".
+Đây là node gốc.
 
-Đây là node gốc của Tree Diagram.
+Count = Tổng số dòng có Label = "good".
 
 ### LEVEL 1 – GT DETAIL
 
@@ -112,33 +126,37 @@ Các giá trị đã biết:
 - S2T
 - NER
 
-Nếu xuất hiện các giá trị khác, vẫn phải thống kê đầy đủ.
+Nếu có giá trị mới, vẫn phải thống kê.
+
+Mỗi giá trị GT Detail là một node con của TOTAL.
 
 ### LEVEL 2 – GROUP CAUSE
 
-Phân loại theo GT Detail + Group Cause.
+Phân loại theo:
 
-Các quan hệ đã biết:
+GT Detail → Group Cause
 
-NER:
+Mapping đã biết:
+
+**NER**
 - Business Rule Error
 - NER Error
 
-S2T:
+**S2T**
 - Extra Speech
 - Missing / Extra Speech
 - Number And Entity Error
 - Recognition Error
 
-Nếu dataset có thêm giá trị hoặc tổ hợp khác, phải đưa vào thống kê.
+Nếu xuất hiện Group Cause mới, phải tự động bổ sung vào hierarchy.
 
-Không tự loại bỏ giá trị chưa có trong danh sách.
+Không giới hạn danh sách.
 
 ### LEVEL 3 – FALSE ENTITY
 
 Phân loại theo:
 
-GT Detail + Group Cause + False Entity
+GT Detail → Group Cause → False Entity
 
 Các giá trị đã biết:
 
@@ -148,138 +166,133 @@ Các giá trị đã biết:
 - Confirm Sec
 - Name
 
-Danh sách này không cố định.
+Nếu xuất hiện các giá trị mới, ví dụ Phone Number, Proposal Number, Agent Code, Term hoặc bất kỳ giá trị nào khác, phải tự động đưa vào thống kê.
 
-Tự động phát hiện và thống kê các giá trị khác nếu có.
+Không giả định False Entity nào chỉ thuộc một Group Cause.
 
-Không giả định một False Entity chỉ thuộc một Group Cause.
-
-Ví dụ:
-
-Nếu Amount xuất hiện ở hai Group Cause khác nhau, phải tạo hai node Amount riêng thuộc đúng nhánh cha.
+Nếu Amount xuất hiện trong nhiều Group Cause, phải tạo các node Amount riêng theo đúng nhánh cha.
 
 ### LEVEL 4 – DETAIL FALSE ENTITY
 
 Phân loại theo:
 
-GT Detail + Group Cause + False Entity + Detail False Entity
+GT Detail → Group Cause → False Entity → Detail False Entity
 
 Các giá trị đã biết:
 
 - Value
 - Format
 
-Nếu xuất hiện giá trị khác, vẫn phải thống kê.
+Nếu có giá trị mới, vẫn phải thống kê.
 
 ### LEVEL 5 – ROOT CAUSE
 
 Phân loại theo:
 
-GT Detail + Group Cause + False Entity + Detail False Entity + Root Cause
+GT Detail → Group Cause → False Entity → Detail False Entity → Root Cause
 
-Các quan hệ đã biết:
+Mapping đã biết:
 
-NER + Business Rule Error:
+**NER + Business Rule Error**
 - Inconsistency Model
 
-NER + NER Error:
+**NER + NER Error**
 - Detect Dư
 - Inconsistency Model
 
-S2T + các Group Cause:
+**S2T + các Group Cause**
 - Prompt Not Detail Enough
 - Inconsistency Model
 
-Các giá trị Root Cause mới vẫn phải được thống kê đầy đủ.
-
 Không gộp Inconsistency Model của S2T với Inconsistency Model của NER.
 
-Không tự loại bỏ tổ hợp khác mapping đã biết; chỉ đánh dấu để kiểm tra.
+Nếu có Root Cause mới hoặc tổ hợp khác mapping đã biết, vẫn phải thống kê và đánh dấu để kiểm tra.
 
 ### LEVEL 6 – SOLUTION
 
 Phân loại theo:
 
-GT Detail + Group Cause + False Entity + Detail False Entity + Root Cause + Solution
+GT Detail → Group Cause → False Entity → Detail False Entity → Root Cause → Solution
 
-Các quan hệ giải pháp tham khảo:
+Mapping giải pháp tham khảo:
 
-- S2T + Inconsistency Model → Review Environment.
-- S2T + Prompt Not Detail Enough → Enhance Prompt theo False Entity.
-- NER + Inconsistency Model → Enhance Logging / Trace.
-- NER + Detect Dư → Review Detection Logic.
+**S2T**
+- Inconsistency Model → Review Environment.
+- Prompt Not Detail Enough → Enhance Prompt theo từng False Entity.
 
-Lưu ý:
+**NER**
+- Inconsistency Model → Enhance Logging / Trace.
+- Detect Dư → Review Detection Logic.
 
-Đây là mapping tham khảo để kiểm tra chất lượng dữ liệu, không phải dữ liệu được phép tự động điền.
+Đây là mapping tham khảo, không phải dữ liệu dùng để tự động điền.
 
-Phải thống kê mọi Solution thực tế trong Excel, kể cả khi khác danh sách trên.
+Bắt buộc lấy các Solution thực tế từ sheet `DB Records`.
 
----
-
-## 5. QUY TẮC TỰ ĐỘNG NHẬN DIỆN GIÁ TRỊ MỚI
-
-**ĐÂY LÀ YÊU CẦU BẮT BUỘC.**
-
-Không hard-code danh sách giá trị của bất kỳ cột phân loại nào.
-
-Với mỗi cột phải:
-
-1. Quét toàn bộ dữ liệu sau khi lọc Label.
-2. Lấy tất cả giá trị DISTINCT thực tế.
-3. Không giới hạn Top 5, Top 10 hoặc Top 100.
-4. Không bỏ qua các giá trị hiếm gặp.
-5. Không tự chuẩn hóa hoặc sửa chính tả.
-6. Không tự gộp những giá trị có tên gần giống nhau.
-7. Giữ riêng Blank / Null.
-8. Không làm mất quan hệ với cấp cha.
-9. Không tự tạo tổ hợp không tồn tại.
-10. Tự động bổ sung giá trị mới khi thống kê được cập nhật.
-
-Phải phân biệt giữa:
-
-- Giá trị Blank / Null thực tế trong dataset.
-- Ô trống do một Level chưa áp dụng.
-
-Dùng nhãn hiển thị `(Blank)` cho giá trị thiếu, nhưng vẫn giữ khả năng phân biệt với giá trị văn bản thực sự là `(Blank)`.
+Nếu có thêm Solution mới, vẫn phải thống kê.
 
 ---
 
-## 6. CÁCH TÍNH SỐ LIỆU
+## 5. TỰ ĐỘNG PHÁT HIỆN TẤT CẢ GIÁ TRỊ
 
-Mỗi node trong Tree Diagram phải có các chỉ số:
+**KHÔNG HARD-CODE DANH SÁCH GIÁ TRỊ.**
 
-### 6.1. COUNT
+Với mỗi cột phân loại:
 
-Số record thuộc node đang xét.
+1. Quét toàn bộ dữ liệu sau khi filter Label.
+2. Phát hiện mọi giá trị DISTINCT.
+3. Không giới hạn Top N.
+4. Không bỏ qua giá trị có tần suất nhỏ.
+5. Không tự sửa chính tả.
+6. Không tự gộp các giá trị gần giống nhau.
+7. Không tự chuẩn hóa chữ hoa, chữ thường hoặc khoảng trắng.
+8. Thống kê riêng Blank / Null.
+9. Không tạo tổ hợp không tồn tại trong dataset.
+10. Nếu một giá trị xuất hiện dưới nhiều node cha, phải tạo node riêng cho từng nhánh.
 
-Count được tính theo tổ hợp toàn bộ các cấp cha và cấp hiện tại.
+Phân biệt rõ:
 
-### 6.2. PARENT COUNT
+- Blank thực tế trong dữ liệu.
+- Level chưa áp dụng nên không có giá trị.
+
+Sử dụng nhãn hiển thị riêng cho Missing/Blank để không làm mất record, nhưng không được gộp với chuỗi văn bản thật có cùng tên nhãn.
+
+Nếu một ô chứa nhiều giá trị phân loại, giữ nguyên nội dung ô như một giá trị tại cấp đó, không tự tách thành nhiều record.
+
+---
+
+## 6. PHƯƠNG PHÁP THỐNG KÊ
+
+### COUNT
+
+Số record thuộc node hiện tại.
+
+Mỗi node được xác định bằng toàn bộ tổ hợp giá trị từ Level 1 đến Level hiện tại.
+
+### PARENT COUNT
 
 Số record thuộc node cha trực tiếp.
 
-### 6.3. % OF PARENT
+### % OF PARENT
 
-Công thức:
+Count / Parent Count
 
-% of Parent = Count / Parent Count × 100
+Định dạng kết quả dưới dạng Percentage với 2 chữ số thập phân.
 
-### 6.4. % OF TOTAL
+### % OF TOTAL
 
-Công thức:
+Count / Total Valid Records
 
-% of Total = Count / Total Records × 100
+Định dạng dưới dạng Percentage với 2 chữ số thập phân.
 
-### 6.5. RANK
+### RANK IN PARENT
 
-Xếp hạng các node con theo Count giảm dần trong cùng một node cha.
+Xếp hạng các node con theo Count giảm dần trong cùng node cha.
 
-Các node có Count lớn nhất được ưu tiên hiển thị trước.
+Nếu hai node có Count bằng nhau, áp dụng cùng một quy tắc xếp hạng nhất quán.
 
-### VÍ DỤ CÁCH TÍNH
+### VÍ DỤ MINH HỌA
 
-Ví dụ mô phỏng:
+Giả sử:
 
 TOTAL = 1.000
 
@@ -295,275 +308,200 @@ Prompt Not Detail Enough = 60
 
 Enhance Amount Prompt = 60
 
-Khi đó:
+Kết quả:
 
-- S2T = 70% tổng.
-- Recognition Error = 40% S2T.
-- Amount = 35,71% Recognition Error.
-- Value = 80% Amount.
-- Prompt Not Detail Enough = 75% Value.
-- Enhance Amount Prompt = 100% Root Cause tương ứng.
+- S2T: 700 / 1.000 = 70%.
+- Recognition Error: 280 / 700 = 40%.
+- Amount: 100 / 280 = 35,71%.
+- Value: 80 / 100 = 80%.
+- Prompt Not Detail Enough: 60 / 80 = 75%.
+- Enhance Amount Prompt: 60 / 60 = 100%.
 
-Chỉ sử dụng ví dụ này để hiểu phương pháp tính.
+**Không sử dụng các số liệu mô phỏng này trong báo cáo thực tế.**
 
-Tuyệt đối không đưa số liệu mô phỏng vào kết quả thực tế.
-
-Lưu ý: Không cộng Count của tất cả Level với nhau, vì cùng một record được thống kê tại nhiều cấp.
+Không cộng Count của tất cả Level lại với nhau vì mỗi record được biểu diễn ở nhiều cấp.
 
 ---
 
-## 7. CHỈ TẠO MỘT SHEET MỚI
-
-Tạo đúng một sheet mới trong workbook Excel hiện tại.
+## 7. TẠO DUY NHẤT MỘT SHEET MỚI
 
 Tên sheet:
 
-**Hierarchical_Statistics**
+**`Hierarchical_Statistics`**
 
-Không tạo workbook mới.
+Chỉ tạo sheet này trong workbook hiện tại.
 
-Không tạo thêm sheet khác.
+Nếu tên sheet đã tồn tại, tạo tên mới có hậu tố phù hợp, không ghi đè sheet cũ.
 
-Không xóa, chỉnh sửa hoặc ghi đè sheet nguồn.
+Chia sheet thành bốn khu vực:
 
-Nếu sheet `Hierarchical_Statistics` đã tồn tại, tạo sheet với hậu tố mới phù hợp.
+### AREA A – OVERALL SUMMARY
 
-Bố trí trong sheet gồm bốn khu vực:
+Hiển thị:
 
-**AREA A – OVERALL SUMMARY**
+- Total Source Records.
+- Total Valid Records (Label = good).
+- Excluded Records.
+- GT Detail Distinct Count.
+- Group Cause Distinct Count.
+- False Entity Distinct Count.
+- Detail False Entity Distinct Count.
+- Root Cause Distinct Count.
+- Solution Distinct Count, nếu có.
 
-Tổng quan số liệu.
+Thêm bảng nhỏ thống kê Count theo các cột chính.
 
-**AREA B – FULL HIERARCHICAL STATISTICS TABLE**
+### AREA B – FULL HIERARCHICAL STATISTICS TABLE
 
-Bảng thống kê đầy đủ từ Level 0 đến Level 6.
+Đây là bảng dữ liệu quan trọng nhất.
 
-**AREA C – TREE DIAGRAM**
-
-Sơ đồ cây phân cấp được vẽ từ bảng thống kê.
-
-**AREA D – DATA VALIDATION**
-
-Bảng đối chiếu tính chính xác của số liệu.
-
-Chỉ tạo bốn khu vực trong cùng một sheet.
-
-Phải bố trí vị trí phù hợp để dữ liệu và các đối tượng Excel không chồng lấn, kể cả khi số dòng tăng sau Refresh.
-
----
-
-## 8. AREA A – OVERALL SUMMARY
-
-Tạo bảng tổng quan với các chỉ số:
-
-| Metric | Count |
-|---|---:|
-| Total Source Records | |
-| Total Valid Records (Label = good) | |
-| Excluded Records | |
-| GT Detail Distinct Count | |
-| Group Cause Distinct Count | |
-| False Entity Distinct Count | |
-| Detail False Entity Distinct Count | |
-| Root Cause Distinct Count | |
-| Solution Distinct Count | |
-
-Bổ sung các bảng tổng hợp nhỏ để hiển thị:
-
-- Count theo GT Detail.
-- Count theo Group Cause.
-- Count theo False Entity.
-- Count theo Root Cause.
-
-Các bảng tổng hợp được phép nằm trong cùng AREA A nếu không gây chồng lấn.
-
-Không tạo chart.
-
----
-
-## 9. AREA B – FULL HIERARCHICAL STATISTICS TABLE
-
-Tạo một Excel Table chứa các cột:
+Tạo Excel Table gồm các cột:
 
 | Column | Description |
 |---|---|
-| Level | Cấp phân loại 0–6 |
-| Node ID | Mã node duy nhất |
-| Parent ID | Mã node cha |
-| GT Detail | GT Detail |
-| Group Cause | Group Cause |
-| False Entity | False Entity |
-| Detail False Entity | Detail False Entity |
-| Root Cause | Root Cause |
-| Solution | Giải pháp thực tế |
+| Level | Cấp 0 đến 6 |
+| Node ID | Định danh node duy nhất |
+| Parent ID | Định danh node cha |
+| Node Name | Tên giá trị tại level hiện tại |
+| GT Detail | Giá trị GT Detail |
+| Group Cause | Giá trị Group Cause |
+| False Entity | Giá trị False Entity |
+| Detail False Entity | Giá trị Detail False Entity |
+| Root Cause | Giá trị Root Cause |
+| Solution | Giá trị Solution thực tế |
 | Count | Số record |
-| Parent Count | Số record của node cha |
-| % of Parent | Tỷ lệ trong node cha |
-| % of Total | Tỷ lệ trong toàn bộ dữ liệu |
-| Rank in Parent | Thứ hạng trong cùng node cha |
-| Hierarchy Path | Đường dẫn phân cấp |
+| Parent Count | Số record thuộc node cha |
+| % of Parent | Tỷ lệ so với cha |
+| % of Total | Tỷ lệ so với tổng |
+| Rank in Parent | Thứ hạng trong node cha |
+| Hierarchy Path | Đường dẫn từ TOTAL đến node |
 
-### Yêu cầu cấu trúc
+**QUY TẮC QUAN TRỌNG:**
 
-Mỗi dòng đại diện cho một node.
+Mỗi dòng phải đại diện cho một node riêng biệt.
 
-Ví dụ:
+- Level 0: Một node TOTAL.
+- Level 1: Tất cả GT Detail.
+- Level 2: Tất cả Group Cause trong từng GT Detail.
+- Level 3: Tất cả False Entity trong từng Group Cause.
+- Level 4: Tất cả Detail False Entity trong từng False Entity.
+- Level 5: Tất cả Root Cause trong từng nhánh tương ứng.
+- Level 6: Tất cả Solution thực tế trong từng Root Cause.
 
-Level 0: TOTAL.
+### NODE ID VÀ PARENT ID
 
-Level 1: S2T, NER và các giá trị GT Detail khác nếu có.
+Yêu cầu:
 
-Level 2: Tất cả Group Cause dưới từng GT Detail.
+- Node ID là duy nhất.
+- Parent ID phải trỏ đến đúng Node ID của node cha.
+- Hai node có cùng tên nhưng khác nhánh cha không được dùng chung Node ID.
+- Node ID phải được tạo một cách nhất quán và không phụ thuộc đơn thuần vào tên giá trị.
+- Parent ID của TOTAL được để trống.
+- Hierarchy Path phải thể hiện đầy đủ các cấp và tránh nhập nhằng khi giá trị chứa ký tự đặc biệt.
 
-Level 3: Tất cả False Entity dưới từng Group Cause.
-
-Level 4: Tất cả Detail False Entity dưới từng False Entity.
-
-Level 5: Tất cả Root Cause dưới từng Detail False Entity.
-
-Level 6: Tất cả Solution dưới từng Root Cause.
-
-### Node ID và Parent ID
-
-Phải đảm bảo:
-
-- Node ID duy nhất cho mỗi node.
-- Parent ID tham chiếu đúng node cha.
-- Node cùng tên nhưng khác nhánh cha phải có Node ID riêng.
-- Node ID được tạo một cách nhất quán.
-- Không dùng riêng tên giá trị làm Node ID.
-- Hierarchy Path giữ đầy đủ thứ tự và giá trị các cấp.
-- Nếu giá trị chứa ký tự phân cách đặc biệt thì Hierarchy Path vẫn phải phân biệt chính xác các tổ hợp.
-
-### Sắp xếp
+### SORTING
 
 Sắp xếp theo cấu trúc cây:
 
-- Node cha xuất hiện trước node con.
-- Các node con cùng cấp được sắp xếp theo Count giảm dần.
-- Nếu Count bằng nhau, dùng thứ tự tên nhất quán.
+- Node cha trước node con.
+- Các node con có Count lớn hơn được xếp trước.
+- Không sort toàn bộ bảng chỉ theo Count vì sẽ làm mất cấu trúc phân cấp.
 
-Không sort toàn bảng chỉ theo Count vì sẽ làm mất thứ tự phân cấp.
+### FILTER
 
-### Filter
+Bật AutoFilter trên toàn bộ bảng.
 
-Bật Excel Table Filter cho toàn bộ các cột.
+Cho phép filter theo từng cột hoặc kết hợp nhiều cột.
 
-Cho phép kiểm tra dữ liệu theo:
-
-- Level
-- GT Detail
-- Group Cause
-- False Entity
-- Detail False Entity
-- Root Cause
-- Solution
-- Count
-- % of Parent
-- % of Total
-
-Không giới hạn số dòng trong báo cáo nếu Excel còn đủ khả năng lưu trữ.
+Không giới hạn số dòng thống kê.
 
 ---
 
-## 10. AREA C – AUTOMATIC TREE DIAGRAM
+## 8. AREA C – AUTOMATIC TREE DIAGRAM
 
-**ĐÂY LÀ YÊU CẦU QUAN TRỌNG NHẤT CỦA BÁO CÁO.**
+**PHẢI THỰC SỰ VẼ TREE DIAGRAM TRONG EXCEL.**
 
-Sau khi hoàn thành bảng thống kê, hãy thực sự tự động vẽ một Tree Diagram ngay trong sheet `Hierarchical_Statistics`.
+Không chỉ mô tả cách vẽ.
 
-### 10.1. Loại diagram
+### 8.1. CÔNG NGHỆ
 
-Sử dụng:
-
-**TREE DIAGRAM – HIERARCHICAL FLOWCHART**
-
-Được xây dựng bằng:
+Ưu tiên sử dụng:
 
 - Excel Shapes.
 - Excel Connectors.
-- Text trong từng Shape.
-- Các đối tượng có thể chỉnh sửa trực tiếp trong Excel.
+- TextFrame / TextFrame2.
+- VBA hoặc công cụ tự động hóa Excel có hỗ trợ Shapes.
 
-Không sử dụng:
+Không sử dụng Sunburst, Treemap hoặc ảnh tĩnh để thay thế.
 
-- Sunburst Chart.
-- Treemap.
-- Pie Chart.
-- Bar Chart.
-- Hình ảnh tĩnh.
-- HTML Diagram.
-
-### 10.2. Cấu trúc diagram
+### 8.2. CẤU TRÚC DIAGRAM
 
 Vẽ theo thứ tự:
 
 TOTAL RECORDS
+
 ↓
+
 GT DETAIL
+
 ↓
+
 GROUP CAUSE
+
 ↓
+
 FALSE ENTITY
+
 ↓
+
 DETAIL FALSE ENTITY
+
 ↓
+
 ROOT CAUSE
+
 ↓
+
 SOLUTION
 
-Mỗi node phải nối đúng với node cha theo Parent ID đã tính.
+Mỗi node con phải được nối chính xác với node cha dựa trên Parent ID.
 
-### 10.3. Nội dung hiển thị trên từng node
+### 8.3. NỘI DUNG MỖI NODE
 
-Mỗi node cần hiển thị:
+Mỗi node hiển thị:
 
-**Node Name**
+Node Name
 
 Count: XXX
 
-Parent: XX.XX%
+% Parent: XX.XX%
 
-Total: XX.XX%
+% Total: XX.XX%
 
-Trong đó:
+Node TOTAL hiển thị Count và 100% Total.
 
-- Node Name là giá trị thực tế của cấp hiện tại.
-- Count là số record của node.
-- Parent là % of Parent.
-- Total là % of Total.
+### 8.4. HIỂN THỊ ĐẦY ĐỦ TẤT CẢ NHÁNH
 
-Đối với TOTAL, chỉ cần hiển thị Count và 100% Total.
+Phải vẽ:
 
-### 10.4. Vẽ đầy đủ tất cả các nhánh
+- Mọi GT Detail thực tế.
+- Mọi Group Cause trong từng GT Detail.
+- Mọi False Entity trong từng Group Cause.
+- Mọi Detail False Entity trong từng False Entity.
+- Mọi Root Cause trong từng nhánh.
+- Mọi Solution thực tế.
 
-Yêu cầu bắt buộc:
+Không giới hạn Top 5 hoặc Top 10.
 
-1. Vẽ toàn bộ GT Detail.
-2. Vẽ toàn bộ Group Cause thuộc mỗi GT Detail.
-3. Vẽ toàn bộ False Entity thuộc mỗi Group Cause.
-4. Vẽ toàn bộ Detail False Entity thuộc từng False Entity.
-5. Vẽ toàn bộ Root Cause thuộc từng Detail False Entity.
-6. Vẽ toàn bộ Solution thuộc từng Root Cause.
-7. Không giới hạn số nhánh theo danh sách giá trị đã biết.
-8. Không tự bỏ các node có Count nhỏ.
-9. Không gộp các node có cùng tên nhưng thuộc nhánh cha khác nhau.
-10. Không tạo thêm node cho những tổ hợp không tồn tại trong dữ liệu.
+Không bỏ nhánh có Count nhỏ.
 
-Nếu Solution không tồn tại, diagram kết thúc ở Root Cause.
+Không gộp các node cùng tên thuộc các Parent ID khác nhau.
 
-### 10.5. Quy tắc sắp xếp node
+Không tạo node cho tổ hợp không tồn tại.
 
-Trong từng node cha:
+### 8.5. THIẾT KẾ
 
-- Node con có Count lớn hơn được xếp trước.
-- Node con có Count nhỏ hơn được xếp sau.
-- Các node con phải được hiển thị liền kề trong cùng một nhánh.
-- Không để các đường nối giữa những nhánh khác nhau gây hiểu nhầm.
-
-### 10.6. Thiết kế diagram
-
-Thiết kế đơn giản, tập trung vào số liệu.
+Tôi muốn diagram **cơ bản, dễ đọc, không màu mè**.
 
 Yêu cầu:
 
@@ -571,268 +509,323 @@ Yêu cầu:
 - Chữ đen hoặc xám đậm.
 - Hình chữ nhật đơn giản.
 - Viền mảnh.
-- Kích thước node đồng nhất theo từng cấp.
-- Font dễ đọc.
-- Đường kết nối rõ ràng.
-- Không cần màu sắc trang trí.
-- Không dùng icon không cần thiết.
-- Không sử dụng hiệu ứng 3D.
-- Không để chữ vượt ra ngoài Shape.
-- Không để Shape hoặc Connector chồng lên nhau.
+- Đường nối rõ ràng.
+- Không dùng icon trang trí.
+- Không tạo 3D.
+- Không sử dụng hiệu ứng không cần thiết.
+- Không để node chồng lên nhau.
+- Không để chữ bị cắt.
+- Không để các đường nối gây nhầm lẫn.
 
-Có thể sử dụng màu rất nhẹ để phân biệt S2T và NER nếu thực sự cần thiết, nhưng không bắt buộc.
+Ưu tiên layout từ trái sang phải.
 
-Ưu tiên thể hiện đầy đủ thông tin hơn tính thẩm mỹ.
+Cấu trúc:
 
-### 10.7. Tự động bố trí diagram
+Level 0 nằm bên trái.
 
-Sử dụng thuật toán bố trí cây từ dữ liệu Node ID và Parent ID.
+Level 1 nằm ở cột tiếp theo.
 
-Ưu tiên vẽ từ trái sang phải:
+Tiếp tục đến Level 6.
 
-- Level 0 nằm ngoài cùng bên trái.
-- Level 1 nằm ở cột tiếp theo.
-- Tiếp tục đến Level 6 bên phải.
+Các node con phải được bố trí gần node cha và cùng một cụm nhánh.
 
-Khoảng cách giữa các node phải được tính dựa trên số lượng node con và kích thước nhánh.
+### 8.6. AUTOMATIC TREE LAYOUT
 
-Mỗi nhánh cha phải có đủ không gian cho toàn bộ các nhánh con.
+Không sử dụng tọa độ cố định cho toàn bộ node.
 
-Không đặt các node theo tọa độ cố định nếu điều đó có thể dẫn đến chồng lấn khi số nhánh tăng.
+Bố trí dựa trên số lượng node và kích thước cây.
 
-Nếu diagram quá lớn:
+Quy trình đề xuất:
 
-- Cho phép mở rộng theo chiều ngang và chiều dọc của worksheet.
-- Không tự cắt bỏ node.
-- Không tự giới hạn Top N.
-- Không ép tất cả node vào một khung nhỏ khiến chữ không đọc được.
-- Nếu gặp giới hạn thực tế của Excel, phải báo cáo rõ số node chưa thể vẽ và lý do.
+1. Đọc Node ID và Parent ID từ bảng thống kê.
+2. Xây dựng cấu trúc cây trong bộ nhớ.
+3. Tính kích thước cần thiết của từng cây con.
+4. Xác định tọa độ cho tất cả node.
+5. Tạo Shapes.
+6. Tạo Connectors.
+7. Nối đúng cha–con.
+8. Kiểm tra chồng lấn.
+9. Đối chiếu tổng số node và đường nối.
 
-### 10.8. Đồng bộ diagram với số liệu
+Nếu diagram rất lớn, cho phép mở rộng theo chiều ngang và chiều dọc worksheet.
 
-Diagram phải sử dụng trực tiếp dữ liệu từ Full Hierarchical Statistics Table.
+Không tự động cắt bớt nhánh để vừa màn hình.
 
-Không nhập tay Count và Percentage vào sơ đồ.
+### 8.7. ĐỒNG BỘ SỐ LIỆU
 
-Khi dữ liệu được thống kê lại, diagram phải có thể được tạo lại theo dữ liệu mới.
+Diagram phải được xây dựng trực tiếp từ Full Hierarchical Statistics Table.
 
-Node Name, Count, Parent Count và Percentage phải khớp chính xác với bảng thống kê.
+Không nhập tay Count hoặc Percentage.
 
-Nếu làm mới diagram, phải xử lý các Shapes và Connectors cũ thuộc diagram trước đó để tránh nhân đôi, nhưng không xóa các đối tượng không liên quan.
+Khi số liệu thay đổi:
 
----
+- Tính lại bảng.
+- Xây dựng lại danh sách node.
+- Cập nhật diagram.
+- Không tạo trùng Shapes của lần chạy trước.
+- Không xóa Shapes không thuộc diagram này.
 
-## 11. PHƯƠNG PHÁP TỰ ĐỘNG HÓA TREE DIAGRAM
-
-Ưu tiên sử dụng Excel VBA với:
-
-- Shapes.AddShape
-- Shapes.AddConnector
-- TextFrame hoặc TextFrame2
-- Các phương thức định vị và kết nối Shapes
-
-Nếu môi trường có công cụ tự động hóa Excel khác hỗ trợ đầy đủ Shapes và Connectors, có thể sử dụng công cụ đó.
-
-Quy trình:
-
-1. Đọc dữ liệu nguồn.
-2. Filter Label = "good".
-3. Thống kê toàn bộ các tổ hợp.
-4. Tạo Hierarchical Statistics Table.
-5. Sinh Node ID và Parent ID.
-6. Xác định số lượng node ở từng level.
-7. Tính bố cục dựa trên kích thước các nhánh con.
-8. Tạo Shape cho từng node.
-9. Tạo Connector theo Parent ID.
-10. Hiển thị Count và Percentage.
-11. Kiểm tra các đường nối.
-12. Đối chiếu diagram với bảng thống kê.
-
-Nếu cần sử dụng VBA và workbook hiện tại là `.xlsx`, không được tự ý chuyển định dạng hoặc lưu thành file khác. Hãy sử dụng phương án tự động hóa bên ngoài workbook nếu được hỗ trợ, hoặc yêu cầu quyền sử dụng/lưu macro phù hợp.
-
-Không tự ý thay đổi bảo mật hoặc bật macro.
-
-Nếu môi trường hiện tại không thể thực thi VBA hoặc không hỗ trợ tạo Shapes tự động, phải nêu rõ giới hạn và vẫn hoàn thành bảng thống kê cùng sơ đồ phân cấp dạng văn bản trong sheet. Không được tuyên bố đã tạo Tree Diagram bằng Shapes nếu chưa thực sự tạo thành công.
+Nếu bảng được Refresh nhưng diagram chưa được vẽ lại, phải ghi rõ trạng thái chưa cập nhật.
 
 ---
 
-## 12. AREA D – DATA VALIDATION
+## 9. AREA D – DATA VALIDATION
 
-Tạo bảng kiểm tra chất lượng số liệu.
+Tạo bảng kiểm tra:
 
 | Validation | Expected | Actual | Difference | Status |
 |---|---:|---:|---:|---|
 
-### CHECK 1 – TOTAL
+### CHECK 1 – TOTAL RECORDS
 
-Tổng Count Level 1 phải bằng Total Records.
+Tổng Count Level 1 bằng Total Valid Records.
 
 ### CHECK 2 – GROUP CAUSE
 
-Tổng Count các Group Cause thuộc từng GT Detail phải bằng Count của GT Detail đó.
+Tổng Count của các Group Cause thuộc mỗi GT Detail bằng Count của GT Detail đó.
 
 ### CHECK 3 – FALSE ENTITY
 
-Tổng Count False Entity của từng nhánh Group Cause phải bằng Count của Group Cause tương ứng.
+Tổng Count các False Entity thuộc mỗi Group Cause bằng Count của Group Cause đó.
 
 ### CHECK 4 – DETAIL FALSE ENTITY
 
-Tổng Count Detail False Entity thuộc từng False Entity phải bằng Count của False Entity tương ứng.
+Tổng Count các Detail False Entity thuộc mỗi False Entity bằng Count của False Entity đó.
 
 ### CHECK 5 – ROOT CAUSE
 
-Tổng Count Root Cause thuộc mỗi nhánh Detail False Entity phải bằng Count của nhánh cha tương ứng.
+Tổng Count các Root Cause thuộc mỗi Detail False Entity bằng Count của node cha.
 
 ### CHECK 6 – SOLUTION
 
-Nếu có Solution, tổng Count Solution thuộc mỗi Root Cause phải bằng Count của Root Cause đó.
+Nếu tồn tại cột Solution, tổng Count các Solution thuộc mỗi Root Cause phải bằng Count của node cha.
 
 ### CHECK 7 – NODE RELATIONSHIP
 
 Kiểm tra:
 
-- Mỗi node ngoài TOTAL có Parent ID hợp lệ.
-- Không có node trùng Node ID.
-- Không tồn tại node không có cha.
-- Không tồn tại vòng lặp phân cấp.
-- Level của node con phải lớn hơn Level của node cha đúng một cấp.
+- Mọi node trừ TOTAL đều có Parent ID hợp lệ.
+- Node ID không trùng lặp.
+- Không có node mồ côi.
+- Không có vòng lặp phân cấp.
+- Level của node con lớn hơn Level của node cha đúng một cấp.
 
 ### CHECK 8 – DIAGRAM COMPLETENESS
 
 Kiểm tra:
 
-- Số node trong diagram bằng số node trong bảng thống kê.
-- Số Connector bằng số node ngoài node TOTAL.
+- Tổng số Shapes đại diện cho node bằng số node trong bảng.
+- Tổng số Connectors bằng tổng số node trừ một.
 - Mỗi Connector nối đúng Parent ID.
-- Không bỏ sót nhánh thực tế.
+- Không bỏ sót nhánh.
 
-Nếu không thể vẽ đầy đủ, đánh dấu FAIL và ghi số lượng node bị thiếu.
+Nếu không thể vẽ đầy đủ, ghi trạng thái FAIL và nêu số node hoặc Connector còn thiếu.
 
 ### CHECK 9 – DATA QUALITY
 
 Kiểm tra:
 
 - Blank / Null.
-- Giá trị DISTINCT mới.
-- Giá trị khác mapping dự kiến.
-- Giá trị có khoảng trắng bất thường.
-- Tổ hợp phân loại không hợp lệ theo mapping đã biết.
-- Các dòng có nhiều giá trị trong cùng một ô.
+- Giá trị mới chưa có trong mapping tham khảo.
+- Giá trị sai chính tả nghi ngờ.
+- Khoảng trắng đầu/cuối.
+- Các tổ hợp khác mapping đã biết.
+- Missing Root Cause.
+- Missing Solution.
+- Các ô chứa nhiều giá trị phân loại.
 
-Không tự sửa dữ liệu gốc.
+Giữ nguyên dữ liệu gốc và chỉ báo cáo vấn đề.
 
-Mọi kiểm tra phải có trạng thái PASS / FAIL rõ ràng.
+**Không tự xóa dữ liệu có vấn đề.**
+
+Nếu Expected = Actual thì Status = PASS.
+
+Nếu không bằng nhau thì Status = FAIL.
 
 ---
 
-## 13. YÊU CẦU FILTER VÀ REFRESH
+## 10. FILTER VÀ REFRESH
 
-Bảng thống kê phải cho phép filter theo từng cấp phân loại.
+Bảng thống kê phải cho phép filter theo tất cả các cấp.
 
 Ví dụ:
 
-- Filter GT Detail = S2T.
-- Filter Group Cause = Number And Entity Error.
-- Filter False Entity = Amount.
-- Filter Detail False Entity = Value.
-- Filter Root Cause = Prompt Not Detail Enough.
+GT Detail = S2T
 
-Khi đó, bảng phải hiển thị đúng các node và số liệu phù hợp.
+Group Cause = Number And Entity Error
 
-Lưu ý:
+False Entity = Amount
 
-Filter trong Excel Table không tự động làm thay đổi Tree Diagram trừ khi có logic đồng bộ riêng.
+Detail False Entity = Value
 
-Yêu cầu tối thiểu là Tree Diagram phản ánh toàn bộ dataset đã lọc Label = "good".
+Root Cause = Prompt Not Detail Enough
 
-Nếu môi trường hỗ trợ, bổ sung khả năng vẽ lại diagram cho một nhánh được lựa chọn mà không thay đổi Count và Percentage gốc.
+Khi filter, bảng cần hiển thị đúng các node thỏa điều kiện.
 
-Khi dữ liệu nguồn thay đổi, cần có quy trình Refresh:
+**Lưu ý:** Không được tự thay đổi Count hoặc % of Parent chỉ vì người dùng filter bảng, trừ khi có chức năng tính lại theo phạm vi lọc được thiết kế riêng.
 
-1. Đọc lại dataset.
-2. Lọc lại Label.
-3. Tính lại bảng thống kê.
-4. Cập nhật Node ID và Parent ID.
-5. Vẽ lại Tree Diagram.
-6. Chạy lại Data Validation.
+Tree Diagram mặc định phải thể hiện toàn bộ dữ liệu có Label = "good".
 
-Không được coi Refresh bảng là đã cập nhật diagram nếu Shapes chưa được làm mới.
+Nếu môi trường hỗ trợ, có thể bổ sung cơ chế vẽ lại một nhánh cụ thể dựa trên lựa chọn filter.
+
+Quy trình Refresh:
+
+1. Đọc lại `DB Records`.
+2. Lọc `Label = "good"`.
+3. Phát hiện toàn bộ giá trị DISTINCT.
+4. Tính lại các cấp hierarchy.
+5. Tạo lại Node ID và Parent ID.
+6. Cập nhật bảng thống kê.
+7. Vẽ lại Tree Diagram.
+8. Chạy lại Data Validation.
+
+Không được tuyên bố diagram đã được cập nhật nếu Shapes chưa được làm mới.
 
 ---
 
-## 14. BỐ CỤC VÀ ĐỊNH DẠNG SHEET
+## 11. BỐ CỤC TRONG MỘT SHEET
 
-Tên sheet:
+Tất cả kết quả phải nằm trong:
 
-Hierarchical_Statistics
+**`Hierarchical_Statistics`**
 
-Bố trí đề xuất:
+Bố trí:
 
-**AREA A – OVERALL SUMMARY:** Phía trên bên trái.
+**AREA A – Overall Summary**
 
-**AREA B – FULL HIERARCHICAL TABLE:** Phía dưới Summary, bắt đầu từ cột A.
+Ở phần trên cùng của sheet.
 
-**AREA C – TREE DIAGRAM:** Bên phải bảng thống kê, bắt đầu từ một vùng cột đủ xa để không chồng lên bảng.
+**AREA B – Full Hierarchical Statistics Table**
 
-**AREA D – DATA VALIDATION:** Trong khu vực riêng, không chồng lấn với bảng hoặc diagram.
+Ở bên dưới Overall Summary.
 
-Yêu cầu:
+**AREA C – Tree Diagram**
 
-- Bật Filter ở bảng thống kê.
-- Freeze Header phù hợp.
-- Count hiển thị số nguyên.
-- Percentage hiển thị 2 chữ số thập phân.
-- AutoFit cột trong giới hạn dễ đọc.
-- Không cắt bớt tên giá trị.
-- Không để các Shape đè lên dữ liệu.
-- Không dùng màu sắc quá nhiều.
+Ở vùng riêng bên phải bảng thống kê, bắt đầu từ các cột đủ xa để không chồng lên dữ liệu.
+
+**AREA D – Data Validation**
+
+Trong một khu vực độc lập, không bị Shapes che khuất.
+
+Phải tính toán kích thước các khu vực trước khi đặt dữ liệu và diagram.
+
+Không cho các khu vực chồng lên nhau khi số lượng dòng tăng.
+
+### ĐỊNH DẠNG
+
+- Excel Table có AutoFilter.
+- Freeze Header.
+- Count dạng số nguyên.
+- Percentage 2 chữ số thập phân.
+- Column Width dễ đọc.
+- Node Name không bị cắt.
+- Không dùng quá nhiều màu sắc.
+- Không tạo chart phụ.
 - Không tạo thêm sheet.
-- Không tạo workbook mới.
 
 ---
 
-## 15. KẾT QUẢ CUỐI CÙNG
+## 12. YÊU CẦU VỀ AUTOMATION VÀ GIỚI HẠN KỸ THUẬT
 
-Sau khi hoàn thành, trong workbook hiện tại phải có một sheet `Hierarchical_Statistics` chứa:
+Ưu tiên Excel Automation có thể tạo trực tiếp Shapes và Connectors.
 
-**1. Overall Summary**
+Nếu sử dụng VBA:
 
-Số liệu tổng quan sau khi filter Label = "good".
+- Có thể dùng Shapes.AddShape.
+- Có thể dùng Shapes.AddConnector.
+- Có thể dùng TextFrame / TextFrame2.
+- Phải có logic tạo lại diagram khi dữ liệu được cập nhật.
 
-**2. Full Hierarchical Statistics Table**
+Nếu workbook đang là `.xlsx`, không tự ý chuyển sang `.xlsm` hoặc tạo file mới.
 
-Toàn bộ số liệu phân cấp từ Total đến Solution.
+Không tự ý bật macro hoặc thay đổi thiết lập bảo mật.
 
-**3. Complete Tree Diagram**
+Nếu môi trường hiện tại không hỗ trợ chạy VBA hoặc tạo Shapes tự động:
 
-Sơ đồ cây với đầy đủ các node và đường nối, sử dụng Excel Shapes và Connectors.
+1. Vẫn hoàn thành toàn bộ bảng thống kê.
+2. Tạo sơ đồ cây dạng văn bản trong khu vực diagram nếu có thể.
+3. Ghi rõ Tree Diagram bằng Shapes chưa thực hiện được.
+4. Nêu chính xác tính năng hoặc quyền truy cập còn thiếu.
+5. Không tuyên bố đã hoàn thành Tree Diagram bằng Shapes nếu thực tế chưa tạo được.
 
-**4. Data Validation**
+Nếu số node vượt giới hạn thực tế của Excel, phải nêu số node có thể vẽ, số node chưa thể vẽ và lý do.
 
-Kết quả đối chiếu số liệu và kiểm tra độ đầy đủ của diagram.
+Không âm thầm bỏ bớt nhánh.
 
-### TIÊU CHUẨN HOÀN THÀNH
+---
 
-Báo cáo chỉ được coi là hoàn thành đầy đủ khi:
+## 13. KIỂM TRA KẾT QUẢ CUỐI CÙNG
 
-- Dữ liệu nguồn được giữ nguyên.
-- Điều kiện Label = "good" được áp dụng chính xác.
-- Tất cả giá trị DISTINCT đều được thống kê.
-- Mọi tổ hợp thực tế đều có trong bảng.
-- Count và Percentage chính xác.
-- Parent ID và Node ID đúng.
-- Diagram có đầy đủ node thực tế.
-- Các Connector nối đúng quan hệ cha–con.
-- Không có số liệu mô phỏng trong kết quả.
-- Data Validation được thực hiện.
-- Tất cả kết quả nằm trong một sheet mới.
+Sau khi hoàn thành, phải kiểm tra:
 
-**ƯU TIÊN CAO NHẤT:**
+- Sheet nguồn chính xác là `DB Records`.
+- Điều kiện lọc chính xác là `Label = "good"`.
+- Không thay đổi dữ liệu nguồn.
+- Chỉ tạo một sheet kết quả.
+- Các giá trị DISTINCT được thống kê đầy đủ.
+- Không giới hạn Top N.
+- Các Count đúng.
+- Các Percentage đúng.
+- Node ID duy nhất.
+- Parent ID chính xác.
+- Mỗi node có đầy đủ thông tin cấp cha.
+- Tree Diagram có đủ node.
+- Connectors chính xác.
+- Diagram khớp với bảng thống kê.
+- Data Validation đã chạy.
+- Không có dữ liệu mô phỏng trong kết quả.
 
-TÍNH CHÍNH XÁC → TÍNH ĐẦY ĐỦ → ĐÚNG QUAN HỆ PHÂN CẤP → KHẢ NĂNG KIỂM TRA → TÍNH DỄ ĐỌC.
+Nếu có lỗi, báo cáo rõ các kiểm tra FAIL.
 
-Hãy thực sự tạo sheet thống kê và Tree Diagram bằng các công cụ Excel hiện có, không chỉ viết hướng dẫn hoặc mô tả các bước thực hiện.
+---
 
-Nếu có giới hạn kỹ thuật khiến một phần không thực hiện được, phải báo cáo rõ phần đã hoàn thành, phần chưa hoàn thành và nguyên nhân, không tự thay thế bằng kết quả giả.
+## 14. KẾT QUẢ TÔI MONG MUỐN
 
-**KẾT THÚC PROMPT.**
+Tôi muốn nhận được **một sheet Excel duy nhất** tên `Hierarchical_Statistics`, nằm ngay trong workbook hiện tại.
+
+Sheet này phải có:
+
+**1. OVERALL SUMMARY**
+
+Tổng số record và phân bổ tổng quan.
+
+**2. FULL HIERARCHICAL STATISTICS TABLE**
+
+Toàn bộ các cấp từ Total đến Solution, có Count, Parent Count, Percentage, Rank và quan hệ cha–con.
+
+**3. COMPLETE TREE DIAGRAM**
+
+Sơ đồ cây đầy đủ các nhánh thực tế, từ tổng quan rộng nhất đến nguyên nhân và giải pháp chi tiết nhất.
+
+**4. DATA VALIDATION**
+
+Đối chiếu số liệu để đảm bảo không bị thiếu, sai hoặc đếm trùng.
+
+### ƯU TIÊN THEO THỨ TỰ
+
+1. Data Accuracy.
+2. Data Completeness.
+3. Correct Hierarchy.
+4. Correct Parent-Child Relationships.
+5. Complete Tree Diagram.
+6. Data Validation.
+7. Readability.
+8. Professional Formatting.
+
+**YÊU CẦU CUỐI CÙNG:**
+
+Hãy thực sự đọc dữ liệu từ sheet `DB Records`, lọc `Label = "good"`, tính toàn bộ số liệu, tạo duy nhất một sheet mới `Hierarchical_Statistics` và tự động vẽ đầy đủ Tree Diagram bằng Excel Shapes và Connectors nếu môi trường hỗ trợ.
+
+Không tạo workbook mới.
+
+Không thay đổi sheet nguồn.
+
+Không tự tạo số liệu.
+
+Không giới hạn các giá trị thực tế.
+
+Không bỏ sót các nhánh.
+
+Không chỉ đưa ra hướng dẫn thực hiện.
+
+**HÃY THỰC HIỆN TOÀN BỘ CÁC YÊU CẦU TRONG WORKBOOK HIỆN TẠI.**
