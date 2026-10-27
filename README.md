@@ -1,1 +1,1 @@
-python -m py_compile s2t_prompts.py s2t_prompts_original.py s2t_v3_guards.py
+python -c "import s2t_prompts; print('Import V3: OK'); print('get_prompt:', callable(s2t_prompts.get_prompt))"
