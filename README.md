@@ -1,10 +1,24 @@
-STT	Sub-task	Nội dung thực hiện	Deliverable
-1	Analyze False Entity Errors	Phân tích các lỗi S2T theo từng False Entity (Amount, Name, Phone Number, Agent Code, Proposal Number, Term...)	Danh sách lỗi và mức độ ưu tiên
-2	Identify Prompt Gaps	Xác định điểm thiếu trong prompt hiện tại khiến model nhận dạng sai hoặc không nhất quán	Danh sách vấn đề cần cải thiện
-3	Enhance Amount Prompt	Cải thiện nhận dạng số tiền, đơn vị tiền tệ, cách đọc số	Prompt cập nhật cho Amount
-4	Enhance Name Prompt	Cải thiện nhận dạng họ tên, tên riêng và tên khách hàng	Prompt cập nhật cho Name
-5	Enhance Code & Number Prompt	Cải thiện Agent Code, Proposal Number, Phone Number và chuỗi ký tự chữ–số	Prompt cập nhật cho Code & Number
-6	Enhance Domain Terminology Prompt	Bổ sung thuật ngữ bảo hiểm, tên sản phẩm và từ chuyên ngành	Prompt cập nhật cho Term
-7	Integrate Prompt Improvements	Tích hợp các thay đổi thành prompt thống nhất, tránh xung đột quy tắc	Unified S2T Prompt
-8	Test & Compare Results	Chạy lại các audio lỗi với prompt cũ và mới, so sánh transcript với Ground Truth	Kết quả Before vs After
-9	Evaluate Regression & Finalize	Kiểm tra cải thiện ở nhóm lỗi mục tiêu và đảm bảo không làm tăng lỗi ở nhóm khác	Final Prompt & Evaluation Report
+### 1. Đã thực hiện (Completed)
+- Hoàn thành phân tích 1.032 trường hợp lỗi (S2T: 76,84%; NER: 15,79%).
+- Xác định nguyên nhân (Root Cause), giải pháp (Solution) và kế hoạch xử lý (Backlog).
+
+**Đầu ra (Deliverables):** Báo cáo phân tích lỗi (RCA), danh sách giải pháp và Backlog.
+
+**Chuyển tiếp:** Hoàn tất phân tích → Chuẩn bị triển khai.
+
+### 2. Đang thực hiện (In Progress)
+- Tổng hợp kết quả (Summary) và viết đặc tả kỹ thuật (TS).
+- Chuẩn bị bộ kiểm thử (Test Cases), ưu tiên S2T và rà soát NER, Post-processing.
+
+**Đầu ra dự kiến (Deliverables):** Summary, tài liệu TS và bộ Test Cases.
+
+**Chuyển tiếp:** Hoàn thiện TS → Triển khai và kiểm thử.
+
+### 3. Kế hoạch tiếp theo (Next Steps)
+- Triển khai tối ưu (S2T, NER, Post-processing).
+- Đánh giá hiệu quả (Before/After, Testing).
+- Nghiệm thu và triển khai chính thức (UAT, Go-live).
+
+**Đầu ra dự kiến (Deliverables):** Phiên bản tối ưu, báo cáo đánh giá hiệu quả, kết quả UAT và bản triển khai chính thức.
+
+**Mục tiêu kinh doanh (Business Objective):** Giảm tỷ lệ lỗi, nâng cao độ chính xác dữ liệu và hiệu quả vận hành.
