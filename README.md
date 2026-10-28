@@ -1,7 +1,8 @@
 
 
-python -m py_compile ner_prompts.py ner_prompts_original.py ner_v2_guards.py
+
+p = enhance_prompt(text)
+print(p[p.find("<hints>"):p.find("</hints>")+8])
 
 
-
-python -c "import ner_prompts; print('NER V2:', callable(ner_prompts.get_prompt))"
+print(p[p.find("<pattern>"):p.find("</pattern>")+10])
