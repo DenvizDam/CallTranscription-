@@ -1,3 +1,7 @@
+
+S2T - fix dc lỗi nhận dạng sai giá trị số tiền  , c
+NER - fix được lỗi trích xuất sai format của ammount và năm tháng 
+
 Mục đích của bản Technical Specification (TS) này là giải thích, ghi nhận và kiểm soát toàn bộ những thay đổi kỹ thuật trong quá trình tối ưu hệ thống Speech-to-Text (S2T) và Named Entity Recognition (NER), để team Developer, AI/ML, QA và Technical Lead có thể hiểu, kiểm thử và triển khai một cách nhất quán.
 
 Nói đơn giản, tài liệu này giúp trả lời 5 câu hỏi:
