@@ -1,4 +1,4 @@
-"""NER V2 update: case-specific full-name hint priority, plus existing amount/term rules.
+"""NER V2 name-only update: precise full-name span selection; amount/term rules unchanged.
 
 No values, keys, metadata, reference masking, or JSON schema are changed here.
 The guards are inserted outside the original reference block.
@@ -18,16 +18,16 @@ EXTRACTION_GUARD = """
 <ner_v2_entity_extraction_guard>
 HIGH-PRIORITY ENTITY OUTPUT RULES (only for keys in the existing Step 2 entity list):
 
-A. PERSON-NAME BOUNDARIES, HINT PRIORITY, AND SPOKEN SELF-CORRECTIONS:
+A. PERSON-NAME BOUNDARIES — DETERMINISTIC SELECTION ORDER (NAME KEYS ONLY):
    AGENTNAME, POLICYOWNER, INSUREDNAME, CONTACTPERSON
-- PRIORITY OVERRIDE FOR PERSON-NAME SPANS: The old pattern instruction to "take ALL tokens between the anchors" locates a candidate region, NOT the final name boundary. For PERSON-NAME entities only, apply the rules in this section AFTER locating that region. Do not blindly include every intervening token.
-- First find all complete contiguous name candidates actually present in normalized_transcript. Never construct a name from reference or hint text when it does not occur in the transcript.
-- If a reliable case-specific hint for the current person-name key contains a FULL person name and that FULL name appears as one contiguous word sequence in normalized_transcript (case-insensitive; preserve Vietnamese diacritics), prefer exactly the matching name span over a longer anchor-based span that includes immediately adjacent extra words. Output the casing/spelling from normalized_transcript after the permitted normalization, not a copied hint. The expected hint MUST NOT introduce any absent word.
-- Example of boundary selection ONLY (not a name to memorize): transcript "là Mai Trần Thị Ngọc Mai, sinh năm ..." and verified hint "Trần Thị Ngọc Mai" -> POLICYOWNER "Trần Thị Ngọc Mai"; keep the initial "Mai" in normalized_transcript. Apply the same logic to every person name; do not hardcode any particular name.
-- Recognize spoken false starts, isolated repeated given-name words, and self-corrections before a complete name, but only omit them when a reliable hint or sufficiently explicit utterance supports the shorter COMPLETE name. A token that happens to repeat is NOT automatically disfluency.
-- A verified FULL name of four or five words stays intact. Do NOT use a three-word limit, a Vietnamese surname list, or the shortest possible span as a substitute for evidence.
-- If the hint is missing, vague, conflicting, or not present in normalized_transcript, do not force a hint-based correction. Use context and the original extraction rules; do not invent or truncate a name.
-- This priority override changes only the final PERSON-NAME entity value. Do NOT delete, rewrite, or remove extra speech from normalized_transcript, and do not affect other entity keys.
+- OVERRIDE FOR PERSON NAMES ONLY: "take ALL tokens between the anchors" identifies a candidate REGION, not necessarily the final entity value. Never use that instruction to override an exact verified full-name match.
+- FIRST: identify the correct entity key and candidate region using the question pattern and nearby anchors. Do not use hints intended for other person-name keys.
+- SECOND: read the FULL name hint belonging to this exact key, if present. A hint is corroborating evidence, never permission to insert a missing name.
+- THIRD (HIGHEST PRIORITY WHEN SUPPORTED): if the full hinted name occurs as a COMPLETE, CONTIGUOUS TOKEN SEQUENCE inside the candidate region of normalized_transcript (case-insensitive, accents must match), extract THAT MATCHING SEQUENCE and no adjacent words. Compare word boundaries, not substring characters. Preserve the spelling/case in normalized_transcript. Do this even if the region contains an extra repeated spoken token immediately before it.
+- FOURTH: if the hint does not match transcript, do not manufacture its value. Use utterance evidence to locate the true boundaries; where ambiguous, do not guess that a repeated syllable is extra.
+- IMPORTANT CONTRASTIVE EXAMPLE (illustrative, NOT a fixed customer name): transcript "Bên mua bảo hiểm là Mai Trần Thị Ngọc Mai, sinh năm ..." + trusted POLICYOWNER hint "Trần Thị Ngọc Mai" => POLICYOWNER "Trần Thị Ngọc Mai" (NOT "Mai Trần Thị Ngọc Mai"). normalized_transcript retains every spoken token.
+- COUNTEREXAMPLE: transcript "Bên mua bảo hiểm là Nguyễn Thị Ngọc Mai" + full-name hint "Nguyễn Thị Ngọc Mai" => preserve ALL four name tokens. Do not drop a prefix just to shorten names; repeated or familiar words alone are not sufficient evidence of disfluency.
+- Never output a name from reference/hints that does not appear in normalized_transcript. Never alter any non-person-name entity, the original dictionary, or the output schema.
 
 B. MONEY: FACEAMOUNT, TOTALPREMIUM, SUNDRYAMOUNT
 - Output a STRING of digits representing the full integer amount in VND, with no spaces, thousands separators, decimal marks, or unit words.
@@ -48,7 +48,7 @@ All other existing entity extraction rules remain in force.
 SELF_CHECK_GUARD = """
 <ner_v2_output_self_check>
 Before producing the final JSON, check only keys actually required in Step 2:
-1. PERSON-NAMES: the anchor-to-anchor region is a candidate ONLY; if a reliable full-name hint occurs contiguously in normalized_transcript, output exactly that full matched span rather than surrounding extra words. If no such evidence exists, preserve genuine multiword names and avoid guessing. Keep normalized_transcript unchanged.
+1. PERSON-NAMES: if this exact key has a trusted full-name hint that matches a complete contiguous sequence of words INSIDE its candidate region in normalized_transcript, return that exact span only; do NOT include an adjacent repeated token or title. Recheck that every word in output is in the matched transcript span, and that the hint is not being used for another key. Without evidence, preserve genuine multiword names and do not guess. Keep normalized_transcript unchanged.
 2. FACEAMOUNT, TOTALPREMIUM, SUNDRYAMOUNT: each nonempty output must match ^[0-9]+$ and equal the monetary value expressed in normalized_transcript.
 3. PREMIUMTERM: each nonempty output must match ^[0-9]+$, with no "năm", "tháng", spaces, or punctuation; its digits must come from the transcript.
 4. Preserve the exact set of entity keys; do not create extra keys and do not fill absent evidence from hints or reference.
