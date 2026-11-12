@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cây lỗi API trước và sau fine-tune</title>
+<style>
+:root {
+  color-scheme: light;
+  --paper: #f7f9fc;
+  --ink: #1d2938;
+  --sub: #4d5d70;
+  --border: #d8e0e8;
+  --focus: #255b9d;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", "Noto Sans", Arial, sans-serif;
+}
+button { font: inherit; cursor: pointer; }
+button:focus-visible, .scroll:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+h1, h2, p { margin: 0; }
+.shell { width: min(1600px, 100%); padding: 27px 24px 32px; margin: auto; }
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 22px;
+  padding: 2px 0 19px;
+  border-bottom: 1px solid var(--border);
+}
+h1 { font-size: clamp(27px, 2.75vw, 39px); font-weight: 680; letter-spacing: -.03em; line-height: 1.18; }
+h2 { font-size: 19px; font-weight: 670; line-height: 1.3; }
+.hero p { margin-top: 7px; color: var(--sub); }
+.highlight { flex: none; padding: 10px 14px; border-left: 4px solid #13844f; border-radius: 7px; background: #def5e8; }
+.highlight strong { display: block; color: #075b36; font-size: 21px; font-weight: 700; line-height: 1.25; }
+.highlight span { display: block; margin-top: 3px; color: #3a594a; font-size: 13px; }
+.workspace { margin-top: 16px; background: #fff; border: 1px solid var(--border); border-radius: 11px; overflow: hidden; }
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--border);
+}
+.toolbar p { color: var(--sub); font-size: 13px; }
+.controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.filters { display: flex; gap: 2px; padding: 3px; border: 1px solid #e0e6ec; background: #f5f7fa; border-radius: 7px; }
+.filter, .full { padding: 5px 9px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: var(--sub); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.filter:hover, .full:hover { background: #e9eff6; color: #264e79; }
+.filter[aria-pressed="true"] { background: #e2ebf5; border-color: #ccdaea; color: #224c7b; }
+.full { background: #fff; border-color: #c9d4e0; color: #2f4e70; }
+.scroll { overflow-x: hidden; overflow-y: auto; padding: 12px 15px 16px; }
+.board { position: relative; display: grid; grid-template-columns: 584px minmax(0, 1fr); column-gap: 41px; width: 1760px; }
+.cols, .lane { display: grid; grid-template-columns: minmax(146px, .70fr) minmax(224px, 1.12fr) minmax(596px, 2.62fr); gap: 66px; }
+.col-title { padding: 1px 0 9px; color: #394c63; font-weight: 650; font-size: 13px; }
+.cols { padding: 0 11px; }
+.summary, .lanes { position: relative; z-index: 1; }
+.summary { display: grid; grid-template-columns: 130px 187px minmax(0, 1fr); align-items: center; align-content: center; gap: 18px 51px; }
+.summary .request-total { grid-area: 1 / 1 / 3 / 2; }
+.outcomes { display: contents; }
+.outcomes .passed { grid-area: 1 / 2; }
+.outcomes .total-failed { grid-area: 2 / 2; }
+.outcomes .api { grid-area: 2 / 3; }
+.outcomes .user-failed { grid-area: 3 / 3; }
+.lanes { display: grid; gap: 18px; }
+.lane { align-items: center; padding: 12px 11px; border: 1px solid var(--lane-border); border-radius: 8px; background: var(--lane); }
+.lane[hidden] { display: none; }
+.s2t { --accent: #aa365c; --lane: #fff3f6; --lane-border: #f2bdcf; --phase: #ffd1e0; --leaf: #fff8fa; }
+.ner { --accent: #8b5900; --lane: #fff7e6; --lane-border: #efd28b; --phase: #ffdf8b; --leaf: #fffaf0; }
+.both { --accent: #21639d; --lane: #eef7ff; --lane-border: #b9d9f2; --phase: #c5e4ff; --leaf: #f6fbff; }
+.stack { display: grid; gap: 15px; }
+.paired-head, .root-pairs { display: grid; grid-template-columns: minmax(250px, 1.27fr) minmax(280px, 1.35fr); gap: 15px 66px; }
+.root-pairs .leaf { align-content: center; }
+.solution { align-content: center; border-color: #bcdacb; border-left: 3px solid #24845c; background: #f0faf5; }
+.solution .node-name { color: #135d40; }
+.solution .node-desc { color: #36594b; }
+.solution:hover { border-color: #24845c; }
+.solution-detail { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 11px; font-size: 14px; }
+.solution-detail ol { margin: 7px 0 9px; padding-left: 20px; }
+.solution-detail li+li { margin-top: 5px; }
+.solution-detail p { margin-top: 6px; }
+#edges { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.node {
+  position: relative;
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  padding: 8px 9px 8px 12px;
+  border: 1px solid #d5dfe9;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  transition: border-color .16s, box-shadow .16s;
+}
+.node:hover { border-color: var(--accent, #6785a4); box-shadow: 0 2px 6px #22395220; }
+.leaf { background: var(--leaf); }
+.s2t .groups .leaf:nth-child(2), .ner .groups .leaf:nth-child(2) { --leaf: #fff3cf; --stripe: #a16a0c; }
+.s2t .groups .leaf:nth-child(n+3) { --leaf: #edf7ff; --stripe: #306ea4; }
+.ner .groups .leaf:first-child { --leaf: #ffedf1; --stripe: #ad4362; }
+.leaf::before { content: ""; position: absolute; inset: 8px auto 8px 0; width: 3px; background: var(--stripe, var(--accent)); }
+.node-name { display: block; font-size: 13px; font-weight: 650; line-height: 1.28; }
+.node-desc { color: var(--sub); font-size: 12px; line-height: 1.35; }
+.node-row, .values { display: flex; align-items: baseline; gap: 7px; }
+.node-row { justify-content: space-between; flex-wrap: wrap; row-gap: 3px; }
+.values { white-space: nowrap; font-size: 16px; font-weight: 680; font-variant-numeric: tabular-nums; line-height: 1.25; }
+.before { color: #4d5d70; }
+.after { color: #1c2b3d; }
+.arrow { color: #526d88; font-size: 1.1em; font-weight: 800; }
+sup { font-size: .72em; }
+.delta { padding: 2px 6px; border-radius: 4px; white-space: nowrap; font-size: 12px; font-weight: 650; line-height: 1.35; }
+.gain { background: #e9f4ed; color: #205b41; }
+.loss { background: #faeeec; color: #8e3832; }
+.flat { background: #edf1f5; color: #4b5d72; }
+.phase { background: var(--phase); border-color: var(--lane-border); border-left: 4px solid var(--accent); padding: 10px 9px 10px 12px; }
+.phase .node-name { font-size: 16px; color: var(--accent); }
+.phase .values { font-size: 20px; }
+.phase .delta, .summary .delta { justify-self: start; }
+.summary .node { padding: 9px 10px; gap: 5px; }
+.summary .values { font-size: 18px; gap: 6px; }
+.summary .node { color: #fff; border-color: transparent; }
+.summary .node:hover { border-color: #142b47; }
+.summary .node :is(.before,.after,.arrow,.node-desc,.rates) { color: #fff; }
+.summary .node-desc, .summary .rates { font-weight: 500; }
+.request-total { background: #0869a8; }
+.passed { background: #087447; }
+.total-failed { background: #b43829; }
+.api { background: #9a2c2b; }
+.user-failed { background: #a74b0a; }
+.summary .delta { background: #e9f8ef; color: #1b5738; }
+.rates { display: flex; justify-content: space-between; gap: 5px; font-size: 12px; color: var(--sub); }
+.notes { padding: 11px 15px 13px; border-top: 1px solid var(--border); font-size: 12px; color: var(--sub); background: #f8fafb; }
+.notes p+p { margin-top: 4px; }
+dialog { max-width: min(505px, calc(100% - 26px)); width: 100%; border: 1px solid var(--border); border-radius: 11px; padding: 21px; box-shadow: 0 12px 45px #14254150; color: var(--ink); }
+dialog::backdrop { background: #25344770; }
+.dialog-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.close { flex: none; border: 1px solid var(--border); background: #f5f7f9; color: var(--ink); border-radius: 5px; padding: 1px 8px; font-size: 20px; }
+.detail-kicker { color: var(--sub); font-weight: 600; font-size: 12px; margin-bottom: 4px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 14px 0 9px; }
+.detail-metric { padding: 10px 11px; border-radius: 6px; background: #eef3f7; font-size: 13px; color: var(--sub); }
+.detail-metric strong { display: block; color: var(--ink); font-size: 24px; }
+.detail-metric small { display: block; font-size: 12px; }
+.detail-note { margin-top: 10px; font-size: 14px; color: var(--sub); }
+.is-expanded .workspace { position: fixed; inset: 8px; z-index: 5; display: flex; flex-direction: column; margin: 0; }
+.is-expanded .scroll { flex: 1; min-height: 0; }
+.is-expanded { overflow: hidden; }
+@media (max-width: 1040px) {
+  .board { display: block; width: 100%; }
+  .cols, #edges { display: none; }
+  .summary { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1.05fr); gap: 10px; margin-bottom: 19px; }
+  .lane { grid-template-columns: minmax(0, 1fr); gap: 15px; }
+  .phase { max-width: 270px; }
+  .groups::before, .root-pairs::before { color: #3d4f63; font-size: 13px; font-weight: 650; }
+  .groups::before { content: "Nhóm lỗi"; }
+  .root-pairs::before { content: "Nguyên nhân gốc → Giải pháp"; grid-column: 1 / -1; }
+  .root-pairs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px 26px; }
+  .solution::after { content: "→"; position: absolute; top: 50%; left: -24px; transform: translateY(-50%); color: #176747; font-weight: 800; font-size: 20px; }
+  .rates { flex-wrap: wrap; }
+}
+@media (max-width: 570px) {
+  .summary { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .summary .request-total, .outcomes .node { grid-area: auto; }
+  .outcomes .passed, .outcomes .total-failed { margin-left: 10px; width: calc(100% - 10px); }
+  .outcomes .api, .outcomes .user-failed { margin-left: 20px; width: calc(100% - 20px); }
+  .root-pairs { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .solution { margin: 6px 0 4px 10px; width: calc(100% - 10px); }
+  .solution::after { content: "↓"; top: -21px; left: 12px; transform: none; font-size: 16px; }
+}
+@media (max-width: 720px) {
+  .shell { padding: 14px 10px 20px; }
+  .hero { align-items: flex-start; flex-direction: column; gap: 12px; padding-bottom: 12px; }
+  .hero p { font-size: 14px; }
+  .highlight strong { font-size: 18px; }
+  .toolbar { padding: 10px; }
+  .scroll { padding: 8px 10px 12px; }
+  .controls { gap: 6px; }
+  .filter, .full { padding-inline: 7px; }
+}
+@media (prefers-reduced-motion: reduce) { .node { transition: none; } }
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="hero">
+  <div><h1>Cây lỗi API trước và sau fine-tune</h1><p>Kết quả theo nhóm lỗi, nguyên nhân gốc và hướng cải thiện</p></div>
+  <div class="highlight"><strong>Giảm 460 clip · 44,8%</strong><span>S2T đóng góp 375 clip, chiếm 81,5% tổng mức giảm.</span></div>
+</header>
+<section class="workspace" aria-labelledby="tree-title">
+  <header class="toolbar">
+    <div><h2 id="tree-title">Sơ đồ phân loại lỗi</h2><p>Bấm vào ô để xem số liệu hoặc các bước thực hiện.</p></div>
+    <div class="controls">
+      <div class="filters" aria-label="Lọc theo giai đoạn">
+        <button class="filter" type="button" data-filter="all" aria-pressed="true">Tất cả</button>
+        <button class="filter" type="button" data-filter="s2t" aria-pressed="false">S2T</button>
+        <button class="filter" type="button" data-filter="ner" aria-pressed="false">NER</button>
+        <button class="filter" type="button" data-filter="both" aria-pressed="false">Both Phase</button>
+      </div>
+      <button class="full" type="button" id="jump-solutions">Xem giải pháp</button>
+      <button class="full" type="button" id="expand" aria-pressed="false">Mở rộng sơ đồ</button>
+    </div>
+  </header>
+  <div class="scroll" id="tree-scroll" tabindex="0" aria-label="Sơ đồ cây phân loại lỗi">
+    <div class="board" id="board">
+      <div class="col-title">Tổng quan</div>
+      <div class="cols"><div class="col-title">Giai đoạn</div><div class="col-title">Nhóm lỗi</div><div class="paired-head"><div class="col-title">Nguyên nhân gốc</div><div class="col-title">Giải pháp và hướng thực hiện</div></div></div>
+      <div class="summary" id="summary"></div>
+      <div class="lanes" id="lanes"></div>
+      <canvas id="edges" aria-hidden="true"></canvas>
+    </div>
+  </div>
+  <footer class="notes">
+    <p>Mỗi ô đọc từ số trước sang số sau. Phần trăm thay đổi tính trên số trước fine-tune. Số sau chỉ xét cột N.</p>
+    <p><strong>¹</strong> Số chi tiết S2T trước fine-tune được ước tính theo tỷ trọng. <strong>²</strong> Sau fine-tune có 73 phát hiện dư và 2 sai định dạng. Có 1 clip chưa gán nguyên nhân gốc.</p>
+    <p><strong>Total Passed và Total Failed sau fine-tune</strong> là ước tính trên 170.431 request, giả định 460 lỗi API giảm đi đều chuyển thành request đạt. Kịch bản này dùng 12.260 lỗi do người dùng và giữ 5 lỗi chênh lệch chưa phân loại trong Total Failed.</p>
+  </footer>
+</section>
+</main>
+<dialog id="details" aria-labelledby="detail-title">
+  <div class="dialog-head"><div><p class="detail-kicker" id="detail-kicker"></p><h2 id="detail-title"></h2></div><form method="dialog"><button class="close" aria-label="Đóng chi tiết" autofocus>×</button></form></div>
+  <div id="detail-body"></div>
+</dialog>
+<script>
+const stages = [
+  {key:'s2t', name:'S2T', description:'Nhận dạng lời nói', before:793, after:418,
+   groups:[['Lỗi nhận dạng lời nói',560,308,1],['Lỗi số và thực thể',226,103,1],['Thiếu / dư lời nói',5,7],['Dư lời nói',2,0]],
+   roots:[
+     ['Prompt S2T chưa đủ chi tiết',786,416,1,{
+       title:'Siết prompt nhận dạng số và thực thể',
+       summary:'Bổ sung ví dụ dễ nhầm và quy tắc kiểm tra giá trị theo audio.',
+       steps:[
+         'Lấy các clip sai số tiền, tên, mã nhân viên, số điện thoại, số hồ sơ và kỳ hạn để bổ sung ví dụ vào prompt. Ưu tiên cặp dễ nhầm như 21 triệu và 211 triệu.',
+         'Yêu cầu model kiểm tra từng chữ số và đơn vị theo audio trước khi trả kết quả. Giữ nguyên cách che số và logic sử dụng Reference hiện tại.'
+       ],
+       check:'Đo tỷ lệ khớp giá trị theo từng loại thực thể và kiểm tra lại số clip thiếu hoặc dư lời nói.'
+     }],
+     ['Mô hình thiếu nhất quán',7,1,1,{
+       title:'Tái hiện lỗi S2T qua nhiều lần chạy',
+       summary:'Chạy lặp cùng audio và cấu hình, rồi đối chiếu kết quả theo từng lần.',
+       steps:[
+         'Chạy lặp cùng clip với cùng phiên bản model, prompt và tham số giải mã. Ghi mã clip, phiên bản và vị trí đoạn audio liên quan.',
+         'Đối chiếu phần transcript thay đổi. Khi tái hiện được lỗi, kiểm tra riêng cấu hình giải mã và cách chia audio, mỗi lần chỉ đổi một yếu tố.'
+       ],
+       check:'So sánh tỷ lệ các lần chạy cho cùng transcript và cùng giá trị thực thể.'
+     }]
+   ]},
+  {key:'ner', name:'NER', description:'Trích xuất thực thể', before:158, after:97,
+   groups:[['Lỗi NER',138,97],['Lỗi quy tắc nghiệp vụ',20,0]],
+   roots:[
+     ['Phát hiện dư / sai định dạng',103,75,2,{
+       title:'Siết điều kiện trích xuất và kiểm tra định dạng',
+       summary:'Ưu tiên 73 ca phát hiện dư. Kiểm tra riêng 2 ca sai định dạng.',
+       steps:[
+         'Bổ sung ví dụ transcript có thông tin dễ nhầm nhưng không thuộc trường cần trích. Chỉ trả thực thể khi có bằng chứng trong transcript và đúng ngữ cảnh.',
+         'Kiểm tra đầu ra theo từng trường. Số tiền và kỳ hạn phải ở dạng số theo schema hiện tại. Khi chuẩn hóa cách ghi, kiểm tra giá trị trước và sau chuẩn hóa.'
+       ],
+       check:'Đo số thực thể phát hiện dư và số lỗi định dạng. Theo dõi thêm thực thể đúng bị bỏ sót.'
+     }],
+     ['Mô hình thiếu nhất quán',52,19,null,{
+       title:'Chạy lặp NER trên transcript cố định',
+       summary:'Dùng cùng transcript, ghi phiên bản và so sánh từng trường JSON.',
+       steps:[
+         'Cố định transcript, phiên bản model, prompt và cấu hình rồi chạy lặp các case đã biết. Lưu đầu ra theo mã clip để đối chiếu.',
+         'So sánh từng trường với transcript và log trường nào thay đổi giữa các lần chạy. Với lỗi tái hiện được, bổ sung ví dụ hoặc làm rõ điều kiện trích xuất cho đúng trường.'
+       ],
+       check:'Đo tỷ lệ JSON khớp giữa các lần chạy và tỷ lệ từng trường khớp với transcript.'
+     }],
+     ['Hậu xử lý',3,3,null,{
+       title:'Kiểm thử riêng bước hậu xử lý',
+       summary:'Đối chiếu đầu ra NER trước và sau chuẩn hóa để tìm bước làm sai.',
+       steps:[
+         'Lấy 3 ca còn lỗi, đối chiếu JSON ngay sau NER với JSON sau hậu xử lý để xác định quy tắc gây lỗi.',
+         'Chuyển từng ca thành test hồi quy, gồm đầu vào rỗng, cách ghi tương đương và trường hợp sát ranh giới của quy tắc đã sửa.'
+       ],
+       check:'Chạy lại 3 ca gốc và bộ hồi quy để xác nhận quy tắc sửa đúng, giữ nguyên giá trị và schema đầu ra.'
+     }]
+   ]},
+  {key:'both', name:'Both Phase', description:'Cả hai giai đoạn', before:76, after:52,
+   groups:[['Lỗi nhận dạng và trích xuất',76,52]],
+   roots:[
+     ['Prompt hai giai đoạn chưa đủ chi tiết',76,52,null,{
+       title:'Kiểm thử xuyên suốt từ audio đến thực thể',
+       summary:'Chấm riêng transcript, đầu ra NER và kết quả cuối trên cùng clip.',
+       steps:[
+         'Chạy S2T trên audio rồi đối chiếu transcript với ground truth. Chạy NER trên cả transcript AI và transcript chuẩn để xác định trường nào sai do nhận dạng hoặc trích xuất.',
+         'Sửa đúng bước đã xác định, rồi chạy lại toàn bộ pipeline trên cùng tập clip và cùng tiêu chí chấm.'
+       ],
+       check:'Theo dõi số clip Both Phase và tỷ lệ giá trị thực thể cuối khớp ground truth.'
+     }]
+   ]}
+];
+const requests = 170431;
+const api = {name:'Total Failed by API', kind:'Tổng quan', before:1027, after:567};
+const apiReduction = api.before-api.after;
+const userFailed = {name:'Total Failed by User', kind:'Tổng quan', before:12260,
+  description:'Sau fine-tune: chưa có số đo',
+  note:'12.260 là số trước fine-tune. Kịch bản ước tính Total Passed và Total Failed sử dụng lại số này cho sau fine-tune.'};
+const totalFailed = {name:'Total Failed', kind:'Tổng quan', before:13292, after:13292-apiReduction,
+  estimated:true, showRates:true,
+  note:'Tổng lỗi trước fine-tune theo ảnh gốc là 13.292, gồm 1.027 lỗi API đã chốt, 12.260 lỗi do người dùng và 5 lỗi chênh lệch chưa phân loại. Ước tính sau fine-tune là 12.832, gồm 567 + 12.260 + 5.'};
+const passed = {name:'Total Passed', kind:'Tổng quan', before:requests-totalFailed.before, after:requests-totalFailed.after,
+  estimated:true, showRates:true,
+  note:'Ước tính với cùng tổng số 170.431 request và giả định 460 lỗi API giảm đi đều chuyển thành request đạt.'};
+const requestTotal = {name:'Total Requests', kind:'Tổng quan', before:requests, single:true,
+  description:'100% tổng request',
+  note:'170.431 là tổng request trong ảnh gốc, được dùng làm mẫu số cho kịch bản ước tính sau fine-tune.'};
+const nf = new Intl.NumberFormat('vi-VN');
+const decimal = (value, digits=1) => value.toFixed(digits).replace('.',',');
+const signed = (value, formatted) => value>0 ? '+'+formatted : formatted;
+const rate = value => decimal(100*value/requests,2)+'%';
+const board = document.querySelector('#board');
+const canvas = document.querySelector('#edges');
+const dialog = document.querySelector('#details');
+const treeScroll = document.querySelector('#tree-scroll');
+const compactLayout = window.matchMedia('(max-width: 1040px)');
+const baseWidth = 1760;
+let boardScale = 1;
+
+function fitBoard() {
+  if (compactLayout.matches) {
+    boardScale = 1;
+    board.style.width = '';
+    board.style.zoom = '';
+  } else {
+    const style = getComputedStyle(treeScroll);
+    const available = Math.max(1, treeScroll.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
+    const width = Math.max(baseWidth, available);
+    boardScale = available / width;
+    board.style.width = width+'px';
+    board.style.zoom = String(boardScale);
+  }
+  requestAnimationFrame(drawConnections);
+}
+
+function delta(item) {
+  if (item.after==null) return null;
+  const difference = item.after-item.before;
+  const improves = item===passed ? difference>0 : difference<0;
+  const style = difference===0 ? 'flat' : improves ? 'gain' : 'loss';
+  const count = signed(difference,nf.format(difference));
+  const percent = item===passed
+    ? '+'+decimal(100*difference/requests,2)+' điểm %'
+    : signed(difference,decimal(100*difference/item.before))+'%';
+  return {style, text:item===passed ? count+' · '+percent : count+' ('+percent+')'};
+}
+
+function solutionMarkup(solution) {
+  return '<section class="solution-detail"><strong>Hướng thực hiện</strong><ol>'+
+    solution.steps.map(step=>'<li>'+step+'</li>').join('')+
+    '</ol><p><strong>Cách kiểm tra</strong></p><p>'+solution.check+'</p></section>';
+}
+
+function solutionNode(stage,root) {
+  const [cause,,,,solution] = root;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'node solution';
+  button.innerHTML = '<span class="node-name">'+solution.title+'</span><span class="node-desc">'+solution.summary+'</span>';
+  button.setAttribute('aria-label','Giải pháp '+stage.name+', '+solution.title+'. Xem hướng thực hiện');
+  button.addEventListener('click',()=>{
+    document.querySelector('#detail-kicker').textContent = stage.name+' · Giải pháp';
+    document.querySelector('#detail-title').textContent = solution.title;
+    document.querySelector('#detail-body').innerHTML = '<p class="detail-note">'+cause+'</p>'+solutionMarkup(solution);
+    dialog.showModal();
+  });
+  return button;
+}
+
+function showDetails(item) {
+  document.querySelector('#detail-kicker').textContent = item.kind;
+  document.querySelector('#detail-title').textContent = item.name;
+  const afterMissing = item.after==null;
+  const marker = item.marker===1 ? ' <small>Ước tính theo tỷ trọng</small>' : '';
+  const change = delta(item);
+  const beforeMetric = '<div class="detail-metric">'+(item.single?'Tổng request gốc':'Trước fine-tune')+
+    '<strong>'+nf.format(item.before)+'</strong>'+(item.showRates?'<small>'+rate(item.before)+'</small>':marker)+'</div>';
+  const afterMetric = item.single ? '' : '<div class="detail-metric">Sau fine-tune'+(item.estimated?' · ước tính':'')+
+    '<strong>'+(afterMissing?'Chưa có số đo':nf.format(item.after))+'</strong>'+
+    (item.showRates?'<small>'+rate(item.after)+'</small>':'')+'</div>';
+  document.querySelector('#detail-body').innerHTML = '<div class="detail-grid">'+beforeMetric+afterMetric+'</div>'+
+    (change?'<span class="delta '+change.style+'">'+change.text+'</span>':'')+
+    (item.note?'<p class="detail-note">'+item.note+'</p>':'')+
+    (item.solution?solutionMarkup(item.solution):'');
+  dialog.showModal();
+}
+
+function node(item, className) {
+  const button = document.createElement('button');
+  const change = delta(item);
+  button.type = 'button';
+  button.className = 'node '+className;
+  const marker = item.marker ? '<sup>'+item.marker+'</sup>' : '';
+  const after = item.after==null ? '' :
+    '<span class="arrow">→</span><span class="after">'+nf.format(item.after)+'</span>';
+  const badge = change ? '<span class="delta '+change.style+'">'+change.text+'</span>' : '';
+  button.innerHTML = '<span class="node-name">'+item.name+marker+'</span>'+
+    '<span class="node-row"><span class="values"><span class="before">'+nf.format(item.before)+'</span>'+after+'</span>'+
+    (className==='leaf'?badge:'')+'</span>'+
+    (item.description?'<span class="node-desc">'+item.description+'</span>':'')+
+    (item.showRates?'<span class="rates"><span>'+rate(item.before)+' trước</span><span>'+rate(item.after)+' ước tính</span></span>':'')+
+    (className!=='leaf'?badge:'');
+  const accessibleAfter = item.after!=null ? ', '+nf.format(item.after)+' sau'+(item.estimated?', ước tính':'') :
+    item.single ? '' : ', sau fine-tune chưa có số đo';
+  button.setAttribute('aria-label',item.kind+', '+item.name+', '+nf.format(item.before)+(item.single?'':' trước')+accessibleAfter+'. Xem chi tiết');
+  button.addEventListener('click',()=>showDetails(item));
+  return button;
+}
+
+const requestNode = node(requestTotal,'request-total');
+const passedNode = node(passed,'passed');
+const failedNode = node(totalFailed,'total-failed');
+const apiNode = node(api,'api');
+const userNode = node(userFailed,'user-failed');
+const outcomes = document.createElement('div');
+outcomes.className = 'outcomes';
+outcomes.append(passedNode,failedNode,apiNode,userNode);
+document.querySelector('#summary').append(requestNode,outcomes);
+const laneElements = stages.map(stage=>{
+  const lane = document.createElement('section');
+  lane.className = 'lane '+stage.key;
+  lane.dataset.stage = stage.key;
+  lane.setAttribute('aria-label',stage.name);
+  const phase = node({...stage,kind:'Giai đoạn'},'phase');
+  const groupStack = document.createElement('div');
+  groupStack.className = 'stack groups';
+  function makeErrorNode([name,before,after,marker,solution],label) {
+    const note = marker===1 ? 'Số trước fine-tune được ước tính theo tỷ trọng để các nhánh S2T cộng đủ 793 clip.' :
+      marker===2 ? '75 clip sau fine-tune gồm 73 phát hiện dư và 2 sai định dạng.' : '';
+    return node({name,before,after,marker,solution,note,kind:stage.name+' · '+label},'leaf');
+  }
+  const groups = stage.groups.map(group=>makeErrorNode(group,'Nhóm lỗi'));
+  groupStack.append(...groups);
+
+  const rootPairs = document.createElement('div');
+  rootPairs.className = 'root-pairs';
+  const pairs = stage.roots.map(root=>{
+    const cause = makeErrorNode(root,'Nguyên nhân gốc');
+    const solution = solutionNode(stage,root);
+    rootPairs.append(cause,solution);
+    return {cause,solution};
+  });
+  lane.append(phase,groupStack,rootPairs);
+  document.querySelector('#lanes').append(lane);
+  return {lane,phase,groups,pairs};
+});
+
+function drawConnections() {
+  if (compactLayout.matches) return;
+  const {width,height,left,top} = board.getBoundingClientRect();
+  const pixelRatio = window.devicePixelRatio || 1;
+  canvas.width = Math.round(width*pixelRatio);
+  canvas.height = Math.round(height*pixelRatio);
+  const context = canvas.getContext('2d');
+  context.scale(pixelRatio*boardScale,pixelRatio*boardScale);
+  context.lineJoin = 'round';
+  context.lineCap = 'round';
+  function port(element,side) {
+    const rect = element.getBoundingClientRect();
+    return [(rect[side]-left)/boardScale,(rect.top+rect.height/2-top)/boardScale];
+  }
+  function path(points) {
+    context.beginPath();
+    points.forEach(([x,y],index)=>index?context.lineTo(x,y):context.moveTo(x,y));
+  }
+  function stroke(points,color) {
+    path(points);
+    context.lineWidth = 4;
+    context.strokeStyle = color;
+    context.stroke();
+  }
+  function blockArrow([x,y],[tx,ty],color,shaft=8) {
+    const length = Math.hypot(tx-x,ty-y);
+    if (length<1) return;
+    const ux=(tx-x)/length, uy=(ty-y)/length;
+    const head = Math.min(18,length*.62);
+    const halfHead = 10;
+    const halfShaft = shaft/2;
+    const point = (distance,offset)=>[x+ux*distance-uy*offset,y+uy*distance+ux*offset];
+    path([
+      point(0,-halfShaft),point(length-head,-halfShaft),point(length-head,-halfHead),
+      [tx,ty],point(length-head,halfHead),point(length-head,halfShaft),point(0,halfShaft)
+    ]);
+    context.closePath();
+    context.fillStyle = color;
+    context.fill();
+    context.lineWidth = 1.3;
+    context.strokeStyle = '#263e59';
+    context.stroke();
+  }
+  const tailGap = 11;
+  const tipGap = 12;
+  function fan(source,targets,shaft) {
+    const [x,y] = port(source,'right');
+    targets.forEach(([target,color],index)=>{
+      const [ex,ey] = port(target,'left');
+      const offset = (index-(targets.length-1)/2)*17;
+      blockArrow([x+tailGap,y+offset],[ex-tipGap,ey],color,shaft);
+    });
+  }
+  function branch([x,y],ends,color,rail,sourceGap=tailGap) {
+    if (!ends.length) return;
+    const heights = ends.map(end=>end[1]);
+    const start = x + Math.sign(rail-x)*sourceGap;
+    stroke([[start,y],[rail,y]],color);
+    stroke([[rail,Math.min(y,...heights)],[rail,Math.max(y,...heights)]],color);
+    ends.forEach(([ex,ey])=>blockArrow([rail,ey],[ex-tipGap,ey],color,6));
+  }
+  const visible = laneElements.filter(entry=>!entry.lane.hidden);
+  fan(requestNode,[[passedNode,'#087447'],[failedNode,'#b43829']],9);
+  fan(failedNode,[[apiNode,'#9a2c2b'],[userNode,'#a74b0a']],9);
+  const totalPort = port(apiNode,'right');
+  branch(totalPort,visible.map(entry=>port(entry.phase,'left')),'#21639d',totalPort[0]+21);
+  visible.forEach(({lane,phase,groups,pairs})=>{
+    const color = getComputedStyle(lane).getPropertyValue('--accent');
+    fan(phase,groups.map(el=>[el,color]),7);
+    const from = groups.map(el=>port(el,'right'));
+    const rail = from[0][0]+18;
+    const topY = from[0][1], bottomY = from.at(-1)[1];
+    from.forEach(([x,y])=>stroke([[x+tailGap,y],[rail,y]],color));
+    stroke([[rail,topY],[rail,bottomY]],color);
+    branch([rail,(topY+bottomY)/2],pairs.map(({cause})=>port(cause,'left')),color,rail+15,0);
+    pairs.forEach(({cause,solution})=>fan(cause,[[solution,'#24845c']],7));
+  });
+}
+
+const filterButtons = [...document.querySelectorAll('.filter')];
+filterButtons.forEach(button=>button.addEventListener('click',()=>{
+  const filter = button.dataset.filter;
+  filterButtons.forEach(candidate=>candidate.setAttribute('aria-pressed',String(candidate===button)));
+  laneElements.forEach(({lane})=>{lane.hidden=filter!=='all' && lane.dataset.stage!==filter});
+  requestAnimationFrame(drawConnections);
+}));
+document.querySelector('#jump-solutions').addEventListener('click',()=>{
+  const firstSolution = laneElements.find(({lane})=>!lane.hidden)?.pairs[0]?.solution;
+  if (!firstSolution) return;
+  firstSolution.scrollIntoView({block:'nearest',inline:'nearest'});
+  firstSolution.focus({preventScroll:true});
+});
+const expand = document.querySelector('#expand');
+function setExpanded(open) {
+  document.body.classList.toggle('is-expanded',open);
+  expand.setAttribute('aria-pressed',String(open));
+  expand.textContent = open ? 'Thu nhỏ sơ đồ' : 'Mở rộng sơ đồ';
+  requestAnimationFrame(drawConnections);
+}
+expand.addEventListener('click',()=>setExpanded(!document.body.classList.contains('is-expanded')));
+document.addEventListener('keydown',event=>{
+  if (event.key==='Escape' && !dialog.open && document.body.classList.contains('is-expanded')) setExpanded(false);
+});
+dialog.addEventListener('click',event=>{
+  if (event.target!==dialog) return;
+  const r = dialog.getBoundingClientRect();
+  if (event.clientX<r.left || event.clientX>r.right || event.clientY<r.top || event.clientY>r.bottom) dialog.close();
+});
+new ResizeObserver(drawConnections).observe(board);
+new ResizeObserver(fitBoard).observe(treeScroll);
+compactLayout.addEventListener('change',fitBoard);
+fitBoard();
+</script>
+</body>
+</html>
